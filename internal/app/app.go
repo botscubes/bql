@@ -1,38 +1,35 @@
 package app
 
 import (
-	"github.com/botscubes/bql/internal/token"
+	"github.com/botscubes/bql/internal/parser"
 
 	"github.com/botscubes/bql/internal/lexer"
 	"go.uber.org/zap"
 )
 
 var (
-	// input = `x = 2 +X _ 3_123 - 7 y if aelse a IF ELSE TRUE FALSE <= >= == 1 != ! -+ -5`
-	input = `x = 2 + 3 
-" _ 3123 - 7
-if aelse
-if (x == 1) {
-	[ 3, 4]
-} else {
-	3 <= 2
-}
+	input = `x = 3+1*2*4+5; y = 2; true-1;
+	
+if(a == b) {2 / 3+1*2%1} else { y = x - 1 * 3}
 
-1 != 2
-9 > 8
-1 < 5
+(2 + 3) * 6
+y < 1
 
-!true != false
-
-5 % 1
-0/1
+!x != !y
 `
 )
 
 func Start(log *zap.SugaredLogger) {
 	l := lexer.New(input)
+	p := parser.New(l)
 
-	for tok := l.NextToken(); tok.Type != token.EOF; tok = l.NextToken() {
-		log.Debugf("%+v", tok)
+	result := p.ParseProgram()
+	if len(p.Errors()) != 0 {
+		for _, e := range p.Errors() {
+			log.Errorln(e)
+		}
+		return
 	}
+
+	log.Debug(result.String())
 }
