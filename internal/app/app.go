@@ -8,15 +8,7 @@ import (
 )
 
 var (
-	input = `x = 3+1*2*4+5; y = 2; true-1;
-	
-if(a == b) {2 / 3+1*2%1} else { y = x - 1 * 3}
-
-(2 + 3) * 6
-y < 1
-
-!x != !y
-`
+	input = `x = (2+3)*5`
 )
 
 func Start(log *zap.SugaredLogger) {
@@ -31,5 +23,7 @@ func Start(log *zap.SugaredLogger) {
 		return
 	}
 
-	log.Debug(result.String())
+	log.Debug(result.ToString())
+	log.Debug(result.Tree())
+	log.Info("Done")
 }
