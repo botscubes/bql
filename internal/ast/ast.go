@@ -4,11 +4,14 @@ import (
 	"bytes"
 
 	"github.com/botscubes/bql/internal/token"
+	"github.com/davecgh/go-spew/spew"
 )
+
+var nl = "\n"
 
 type Node interface {
 	TokenLiteral() string
-	String() string
+	ToString() string
 }
 
 // All statement nodes implement
@@ -35,13 +38,26 @@ func (p *Program) TokenLiteral() string {
 	}
 }
 
-func (p *Program) String() string {
+func (p *Program) ToString() string {
 	// TODO: replace to:
 	// r := strings.NewReader("foobar")
 	var out bytes.Buffer
 
 	for _, s := range p.Statements {
-		out.WriteString(s.String())
+		out.WriteString(s.ToString())
+	}
+
+	return out.String()
+}
+
+// return pretty AST nodes
+func (p *Program) Tree() string {
+	var out bytes.Buffer
+
+	scs := spew.ConfigState{Indent: "  ", DisablePointerAddresses: true}
+
+	for _, s := range p.Statements {
+		out.WriteString(nl + scs.Sdump(s) + nl)
 	}
 
 	return out.String()
@@ -53,16 +69,16 @@ type AssignStatement struct {
 	Value Expression
 }
 
-func (ls *AssignStatement) statementNode()       {}
-func (ls *AssignStatement) TokenLiteral() string { return ls.Token.Literal }
-func (ls *AssignStatement) String() string {
+func (as *AssignStatement) statementNode()       {}
+func (as *AssignStatement) TokenLiteral() string { return as.Token.Literal }
+func (as *AssignStatement) ToString() string {
 	var out bytes.Buffer
 
-	out.WriteString(ls.TokenLiteral() + " ")
+	out.WriteString(as.TokenLiteral() + " ")
 	out.WriteString(" = ")
 
-	if ls.Value != nil {
-		out.WriteString(ls.Value.String())
+	if as.Value != nil {
+		out.WriteString(as.Value.ToString())
 	}
 
 	out.WriteString(";")
@@ -77,9 +93,9 @@ type ExpressionStatement struct {
 
 func (es *ExpressionStatement) statementNode()       {}
 func (es *ExpressionStatement) TokenLiteral() string { return es.Token.Literal }
-func (es *ExpressionStatement) String() string {
+func (es *ExpressionStatement) ToString() string {
 	if es.Expression != nil {
-		return es.Expression.String()
+		return es.Expression.ToString()
 	}
 	return ""
 }
@@ -91,11 +107,11 @@ type BlockStatement struct {
 
 func (bs *BlockStatement) statementNode()       {}
 func (bs *BlockStatement) TokenLiteral() string { return bs.Token.Literal }
-func (bs *BlockStatement) String() string {
+func (bs *BlockStatement) ToString() string {
 	var out bytes.Buffer
 
 	for _, s := range bs.Statements {
-		out.WriteString(s.String())
+		out.WriteString(s.ToString())
 	}
 
 	return out.String()
@@ -109,7 +125,7 @@ type IntegerLiteral struct {
 
 func (il *IntegerLiteral) expressionNode()      {}
 func (il *IntegerLiteral) TokenLiteral() string { return il.Token.Literal }
-func (il *IntegerLiteral) String() string {
+func (il *IntegerLiteral) ToString() string {
 	return il.Token.Literal
 }
 
@@ -120,7 +136,7 @@ type Boolean struct {
 
 func (b *Boolean) expressionNode()      {}
 func (b *Boolean) TokenLiteral() string { return b.Token.Literal }
-func (b *Boolean) String() string       { return b.Token.Literal }
+func (b *Boolean) ToString() string     { return b.Token.Literal }
 
 type Ident struct {
 	Token token.Token // IDENT
@@ -129,7 +145,7 @@ type Ident struct {
 
 func (i *Ident) expressionNode()      {}
 func (i *Ident) TokenLiteral() string { return i.Token.Literal }
-func (i *Ident) String() string       { return i.Value }
+func (i *Ident) ToString() string     { return i.Value }
 
 type InfixExpression struct {
 	Token    token.Token // +, -, etc
@@ -140,13 +156,13 @@ type InfixExpression struct {
 
 func (oe *InfixExpression) expressionNode()      {}
 func (oe *InfixExpression) TokenLiteral() string { return oe.Token.Literal }
-func (oe *InfixExpression) String() string {
+func (oe *InfixExpression) ToString() string {
 	var out bytes.Buffer
 
 	out.WriteString("(")
-	out.WriteString(oe.Left.String())
+	out.WriteString(oe.Left.ToString())
 	out.WriteString(" " + oe.Operator + " ")
-	out.WriteString(oe.Right.String())
+	out.WriteString(oe.Right.ToString())
 	out.WriteString(")")
 
 	return out.String()
@@ -160,12 +176,12 @@ type PrefixExpression struct {
 
 func (pe *PrefixExpression) expressionNode()      {}
 func (pe *PrefixExpression) TokenLiteral() string { return pe.Token.Literal }
-func (pe *PrefixExpression) String() string {
+func (pe *PrefixExpression) ToString() string {
 	var out bytes.Buffer
 
 	out.WriteString("(")
 	out.WriteString(pe.Operator)
-	out.WriteString(pe.Right.String())
+	out.WriteString(pe.Right.ToString())
 	out.WriteString(")")
 
 	return out.String()
@@ -180,19 +196,19 @@ type IfExpression struct {
 
 func (ie *IfExpression) expressionNode()      {}
 func (ie *IfExpression) TokenLiteral() string { return ie.Token.Literal }
-func (ie *IfExpression) String() string {
+func (ie *IfExpression) ToString() string {
 	var out bytes.Buffer
 
-	out.WriteString("if")
-	out.WriteString(ie.Condition.String())
-	out.WriteString(" { ")
-	out.WriteString(ie.Consequence.String())
+	out.WriteString("if ( ")
+	out.WriteString(ie.Condition.ToString())
+	out.WriteString(" ) { ")
+	out.WriteString(ie.Consequence.ToString())
 	out.WriteString(" } ")
 
 	if ie.Alternative != nil {
 		out.WriteString("else ")
 		out.WriteString(" { ")
-		out.WriteString(ie.Alternative.String())
+		out.WriteString(ie.Alternative.ToString())
 		out.WriteString(" } ")
 	}
 
