@@ -165,7 +165,9 @@ func (p *Parser) parseStatement() ast.Statement {
 }
 
 func (p *Parser) parseAssignStatement() *ast.AssignStatement {
-	stmt := &ast.AssignStatement{Token: p.curToken}
+	stmt := &ast.AssignStatement{
+		Name: &ast.Ident{Token: p.curToken, Value: p.curToken.Literal},
+	}
 
 	// skip ident and ==
 	p.nextToken()

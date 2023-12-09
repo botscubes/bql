@@ -65,12 +65,12 @@ func (p *Program) Tree() string {
 
 // Statements
 type AssignStatement struct {
-	Token token.Token // IDENT
+	Name  *Ident
 	Value Expression
 }
 
 func (as *AssignStatement) statementNode()       {}
-func (as *AssignStatement) TokenLiteral() string { return as.Token.Literal }
+func (as *AssignStatement) TokenLiteral() string { return "" }
 func (as *AssignStatement) ToString() string {
 	var out bytes.Buffer
 
