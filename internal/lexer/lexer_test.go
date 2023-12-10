@@ -13,7 +13,7 @@ type ExpectedToken struct {
 
 func TestNextToken(t *testing.T) {
 	input := `x = 2 + 3 
-" _ 3123 - 7
+_ 3123 - 7
 if aelse
 if (x == 1) {
 	[ 3, 4]
@@ -29,6 +29,8 @@ if (x == 1) {
 
 5 % 1
 0/1
+"abc"
+"a 1 -2 yy"
 `
 
 	tests := []ExpectedToken{
@@ -37,7 +39,6 @@ if (x == 1) {
 		{token.INT, "2"},
 		{token.PLUS, "+"},
 		{token.INT, "3"},
-		{token.ILLEGAL, "\""},
 		{token.IDENT, "_"},
 		{token.INT, "3123"},
 		{token.MINUS, "-"},
@@ -82,6 +83,8 @@ if (x == 1) {
 		{token.INT, "0"},
 		{token.SLASH, "/"},
 		{token.INT, "1"},
+		{token.STRING, "abc"},
+		{token.STRING, "a 1 -2 yy"},
 		{token.EOF, ""},
 	}
 

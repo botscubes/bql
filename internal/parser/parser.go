@@ -70,6 +70,7 @@ func New(l *lexer.Lexer) *Parser {
 	p.prefixParsers[token.FALSE] = p.parseBoolean
 	p.prefixParsers[token.LPAR] = p.parseGroupedExpression
 	p.prefixParsers[token.IF] = p.parseIfExpression
+	p.prefixParsers[token.STRING] = p.parseString
 
 	// infix parse functions
 	p.infixParsers = make(map[token.TokenType]infixParseFn)
@@ -359,4 +360,8 @@ func (p *Parser) parseCallArguments() []ast.Expression {
 	}
 
 	return args
+}
+
+func (p *Parser) parseString() ast.Expression {
+	return &ast.StringLiteral{Token: p.curToken, Value: p.curToken.Literal}
 }

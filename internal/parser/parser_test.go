@@ -424,6 +424,36 @@ func TestParseCallExpression(t *testing.T) {
 	testInfixExpression(t, exp.Arguments[3], "a", "/", "b")
 }
 
+func TestParseString(t *testing.T) {
+	input := `"abc qqqr"`
+
+	l := lexer.New(input)
+	p := New(l)
+	result := p.ParseProgram()
+	checkParserErrors(t, p)
+
+	if len(result.Statements) != 1 {
+		t.Fatalf("program has incorrect number of statements. got:%d",
+			len(result.Statements))
+	}
+
+	stmt, ok := result.Statements[0].(*ast.ExpressionStatement)
+	if !ok {
+		t.Fatalf("result.Statements[0] is not ast.ExpressionStatement. got:%T",
+			result.Statements[0])
+	}
+
+	sl, ok := stmt.Expression.(*ast.StringLiteral)
+	if !ok {
+		t.Fatalf("stmt.Expression is not ast.StringLiteral. got:%T",
+			result.Statements[0])
+	}
+
+	if sl.Value != "abc qqqr" {
+		t.Errorf("sl.Value not %q got:%q", "abc qqqr", sl.Value)
+	}
+}
+
 func testInfixExpression(
 	t *testing.T,
 	exp ast.Expression,
