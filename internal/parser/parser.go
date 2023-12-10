@@ -71,6 +71,7 @@ func New(l *lexer.Lexer) *Parser {
 	p.prefixParsers[token.LPAR] = p.parseGroupedExpression
 	p.prefixParsers[token.IF] = p.parseIfExpression
 	p.prefixParsers[token.STRING] = p.parseString
+	p.prefixParsers[token.LBRACKET] = p.parseArray
 
 	// infix parse functions
 	p.infixParsers = make(map[token.TokenType]infixParseFn)
@@ -334,34 +335,40 @@ func (p *Parser) parseIfExpression() ast.Expression {
 
 func (p *Parser) parseCallExpression(fn ast.Expression) ast.Expression {
 	exp := &ast.CallExpression{Token: p.curToken, FnName: fn}
-	exp.Arguments = p.parseCallArguments()
+	exp.Arguments = p.parseExpressionList(token.RPAR)
 	return exp
 }
 
-func (p *Parser) parseCallArguments() []ast.Expression {
-	args := []ast.Expression{}
+func (p *Parser) parseExpressionList(endToken token.TokenType) []ast.Expression {
+	list := []ast.Expression{}
 
-	if p.peekTokenIs(token.RPAR) {
+	if p.peekTokenIs(endToken) {
 		p.nextToken()
-		return args
+		return list
 	}
 
 	p.nextToken()
-	args = append(args, p.parseExpression(LOWEST))
+	list = append(list, p.parseExpression(LOWEST))
 
 	for p.peekTokenIs(token.COMMA) {
 		p.nextToken()
 		p.nextToken()
-		args = append(args, p.parseExpression(LOWEST))
+		list = append(list, p.parseExpression(LOWEST))
 	}
 
-	if !p.expectPeek(token.RPAR) {
+	if !p.expectPeek(endToken) {
 		return nil
 	}
 
-	return args
+	return list
 }
 
 func (p *Parser) parseString() ast.Expression {
 	return &ast.StringLiteral{Token: p.curToken, Value: p.curToken.Literal}
+}
+
+func (p *Parser) parseArray() ast.Expression {
+	array := &ast.ArrayLiteral{Token: p.curToken}
+	array.Elements = p.parseExpressionList(token.RBRACKET)
+	return array
 }

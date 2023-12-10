@@ -454,6 +454,41 @@ func TestParseString(t *testing.T) {
 	}
 }
 
+func TestParseArray(t *testing.T) {
+	input := "[5, 25 + 1, a, 5 * 3]"
+
+	l := lexer.New(input)
+	p := New(l)
+	result := p.ParseProgram()
+	checkParserErrors(t, p)
+
+	if len(result.Statements) != 1 {
+		t.Fatalf("program has incorrect number of statements. got:%d",
+			len(result.Statements))
+	}
+
+	stmt, ok := result.Statements[0].(*ast.ExpressionStatement)
+	if !ok {
+		t.Fatalf("result.Statements[0] is not ast.ExpressionStatement. got:%T",
+			result.Statements[0])
+	}
+
+	array, ok := stmt.Expression.(*ast.ArrayLiteral)
+	if !ok {
+		t.Fatalf("stmt.Expression is not ast.ArrayLiteral. got:%T",
+			result.Statements[0])
+	}
+
+	if len(array.Elements) != 4 {
+		t.Fatalf("wrong len of array not 4. got:%d", len(array.Elements))
+	}
+
+	testLiteralExpression(t, array.Elements[0], 5)
+	testInfixExpression(t, array.Elements[1], 25, "+", 1)
+	testLiteralExpression(t, array.Elements[2], "a")
+	testInfixExpression(t, array.Elements[3], 5, "*", 3)
+}
+
 func testInfixExpression(
 	t *testing.T,
 	exp ast.Expression,
