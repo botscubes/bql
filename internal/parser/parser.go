@@ -84,6 +84,7 @@ func New(l *lexer.Lexer) *Parser {
 	p.infixParsers[token.GEQ] = p.parseInfixExpression
 	p.infixParsers[token.LT] = p.parseInfixExpression
 	p.infixParsers[token.GT] = p.parseInfixExpression
+	p.infixParsers[token.LPAR] = p.parseCallExpression
 
 	// read curToken and peekToken
 	p.nextToken()
@@ -328,4 +329,34 @@ func (p *Parser) parseIfExpression() ast.Expression {
 	}
 
 	return expression
+}
+
+func (p *Parser) parseCallExpression(fn ast.Expression) ast.Expression {
+	exp := &ast.CallExpression{Token: p.curToken, FnName: fn}
+	exp.Arguments = p.parseCallArguments()
+	return exp
+}
+
+func (p *Parser) parseCallArguments() []ast.Expression {
+	args := []ast.Expression{}
+
+	if p.peekTokenIs(token.RPAR) {
+		p.nextToken()
+		return args
+	}
+
+	p.nextToken()
+	args = append(args, p.parseExpression(LOWEST))
+
+	for p.peekTokenIs(token.COMMA) {
+		p.nextToken()
+		p.nextToken()
+		args = append(args, p.parseExpression(LOWEST))
+	}
+
+	if !p.expectPeek(token.RPAR) {
+		return nil
+	}
+
+	return args
 }

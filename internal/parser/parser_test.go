@@ -385,6 +385,45 @@ func TestParseBoolean(t *testing.T) {
 	}
 }
 
+func TestParseCallExpression(t *testing.T) {
+	input := "sum(1, 3 + 12, 4 * 5, a / b)"
+
+	l := lexer.New(input)
+	p := New(l)
+	result := p.ParseProgram()
+	checkParserErrors(t, p)
+
+	if len(result.Statements) != 1 {
+		t.Fatalf("program has incorrect number of statements. got:%d",
+			len(result.Statements))
+	}
+
+	stmt, ok := result.Statements[0].(*ast.ExpressionStatement)
+	if !ok {
+		t.Fatalf("result.Statements[0] is not ast.ExpressionStatement. got:%T",
+			result.Statements[0])
+	}
+
+	exp, ok := stmt.Expression.(*ast.CallExpression)
+	if !ok {
+		t.Fatalf("stmt.Expression is not ast.CallExpression. got:%T",
+			result.Statements[0])
+	}
+
+	if !testIdent(t, exp.FnName, "sum") {
+		return
+	}
+
+	if len(exp.Arguments) != 4 {
+		t.Fatalf("wrong len of arguments. got:%d", len(exp.Arguments))
+	}
+
+	testLiteralExpression(t, exp.Arguments[0], 1)
+	testInfixExpression(t, exp.Arguments[1], 3, "+", 12)
+	testInfixExpression(t, exp.Arguments[2], 4, "*", 5)
+	testInfixExpression(t, exp.Arguments[3], "a", "/", "b")
+}
+
 func testInfixExpression(
 	t *testing.T,
 	exp ast.Expression,

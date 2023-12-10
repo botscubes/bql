@@ -2,6 +2,7 @@ package ast
 
 import (
 	"bytes"
+	"strings"
 
 	"github.com/botscubes/bql/internal/token"
 	"github.com/davecgh/go-spew/spew"
@@ -54,7 +55,7 @@ func (p *Program) ToString() string {
 func (p *Program) Tree() string {
 	var out bytes.Buffer
 
-	scs := spew.ConfigState{Indent: "  ", DisablePointerAddresses: true}
+	scs := spew.ConfigState{Indent: "|   ", DisablePointerAddresses: true}
 
 	for _, s := range p.Statements {
 		out.WriteString(nl + scs.Sdump(s) + nl)
@@ -74,7 +75,7 @@ func (as *AssignStatement) TokenLiteral() string { return "" }
 func (as *AssignStatement) ToString() string {
 	var out bytes.Buffer
 
-	out.WriteString(as.TokenLiteral() + " ")
+	out.WriteString(as.Name.TokenLiteral() + " ")
 	out.WriteString(" = ")
 
 	if as.Value != nil {
@@ -125,9 +126,7 @@ type IntegerLiteral struct {
 
 func (il *IntegerLiteral) expressionNode()      {}
 func (il *IntegerLiteral) TokenLiteral() string { return il.Token.Literal }
-func (il *IntegerLiteral) ToString() string {
-	return il.Token.Literal
-}
+func (il *IntegerLiteral) ToString() string     { return il.Token.Literal }
 
 type Boolean struct {
 	Token token.Token // TRUE, FALSE
@@ -211,6 +210,30 @@ func (ie *IfExpression) ToString() string {
 		out.WriteString(ie.Alternative.ToString())
 		out.WriteString(" } ")
 	}
+
+	return out.String()
+}
+
+type CallExpression struct {
+	Token     token.Token // '('
+	FnName    Expression  // Ident
+	Arguments []Expression
+}
+
+func (ce *CallExpression) expressionNode()      {}
+func (ce *CallExpression) TokenLiteral() string { return ce.Token.Literal }
+func (ce *CallExpression) ToString() string {
+	var out bytes.Buffer
+
+	args := []string{}
+	for _, a := range ce.Arguments {
+		args = append(args, a.ToString())
+	}
+
+	out.WriteString(ce.FnName.ToString())
+	out.WriteString("(")
+	out.WriteString(strings.Join(args, ", "))
+	out.WriteString(")")
 
 	return out.String()
 }

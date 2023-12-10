@@ -8,7 +8,15 @@ import (
 )
 
 var (
-	input = `x = (2+3)*5`
+	input = `x = (2+3)*5;
+if(x >= 10) {
+	t = 1 + 2 * (3 - 125) % 2 / (9 + 1);
+} else {
+	t = -1;
+}
+
+r = add(1, 2 * 8, t, 2 + 3);
+`
 )
 
 func Start(log *zap.SugaredLogger) {
