@@ -1,26 +1,21 @@
 package app
 
 import (
+	"os"
+
 	"github.com/botscubes/bql/internal/parser"
 
 	"github.com/botscubes/bql/internal/lexer"
 	"go.uber.org/zap"
 )
 
-var (
-	input = `x = (2+3)*5;
-if(x >= 10) {
-	t = 1 + 2 * (3 - 125) % 2 / (9 + 1);
-} else {
-	t = -1;
-}
+func Start(log *zap.SugaredLogger, fileName string) {
+	input, err := os.ReadFile(fileName)
+	if err != nil {
+		log.Fatalw("error opening the file", "error:", err)
+	}
 
-r = add(1, 2 * 8, t, 2 + 3);
-`
-)
-
-func Start(log *zap.SugaredLogger) {
-	l := lexer.New(input)
+	l := lexer.New(string(input))
 	p := parser.New(l)
 
 	result := p.ParseProgram()

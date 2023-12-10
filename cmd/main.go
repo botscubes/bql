@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"os"
 	"runtime"
 
 	"github.com/botscubes/bql/internal/app"
@@ -25,6 +26,11 @@ func main() {
 		}
 	}()
 
-	app.Start(log)
+	if len(os.Args) != 2 {
+		log.Info(`example usage: ./main code.txt`)
+		return
+	}
+
+	app.Start(log, os.Args[1])
 
 }
