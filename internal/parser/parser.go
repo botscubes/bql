@@ -139,6 +139,18 @@ func (p *Parser) curPrecedence() int {
 	return LOWEST
 }
 
+func (p *Parser) expectSemi() bool {
+	if !p.curTokenIs(token.RBRACE) && !p.curTokenIs(token.EOF) {
+		if !p.curTokenIs(token.SEMICOLON) {
+			e := fmt.Sprintf("expected ; at end of statement, got %s", p.curToken.Literal)
+			p.errors = append(p.errors, e)
+			return false
+		}
+		p.nextToken()
+	}
+	return true
+}
+
 func (p *Parser) ParseProgram() *ast.Program {
 	program := &ast.Program{}
 	program.Statements = []ast.Statement{}
@@ -149,6 +161,11 @@ func (p *Parser) ParseProgram() *ast.Program {
 			program.Statements = append(program.Statements, stmt)
 		}
 		p.nextToken()
+
+		if ok := p.expectSemi(); !ok {
+			break
+		}
+
 	}
 
 	return program
@@ -178,10 +195,6 @@ func (p *Parser) parseAssignStatement() *ast.AssignStatement {
 
 	stmt.Value = p.parseExpression(LOWEST)
 
-	if p.peekTokenIs(token.SEMICOLON) {
-		p.nextToken()
-	}
-
 	return stmt
 }
 
@@ -189,10 +202,6 @@ func (p *Parser) parseExpressionStatement() *ast.ExpressionStatement {
 	stmt := &ast.ExpressionStatement{Token: p.curToken}
 
 	stmt.Expression = p.parseExpression(LOWEST)
-
-	if p.peekTokenIs(token.SEMICOLON) {
-		p.nextToken()
-	}
 
 	return stmt
 }
@@ -209,6 +218,10 @@ func (p *Parser) parseBlockStatement() *ast.BlockStatement {
 			block.Statements = append(block.Statements, stmt)
 		}
 		p.nextToken()
+
+		if ok := p.expectSemi(); !ok {
+			break
+		}
 	}
 
 	return block

@@ -4,6 +4,7 @@ import (
 	"os"
 
 	"github.com/botscubes/bql/internal/parser"
+	"github.com/botscubes/bql/internal/token"
 
 	"github.com/botscubes/bql/internal/lexer"
 	"go.uber.org/zap"
@@ -16,6 +17,21 @@ func Start(log *zap.SugaredLogger, fileName string) {
 	}
 
 	l := lexer.New(string(input))
+
+	print_ast(log, l)
+
+	// print_tokens(log, l)
+
+	log.Info("Done")
+}
+
+func print_tokens(log *zap.SugaredLogger, l *lexer.Lexer) {
+	for tok := l.NextToken(); tok.Type != token.EOF; tok = l.NextToken() {
+		log.Debugf("Token: %q \t Value: %q", tok.Type, tok.Literal)
+	}
+}
+
+func print_ast(log *zap.SugaredLogger, l *lexer.Lexer) {
 	p := parser.New(l)
 
 	result := p.ParseProgram()
@@ -28,5 +44,4 @@ func Start(log *zap.SugaredLogger, fileName string) {
 
 	log.Debug(result.ToString())
 	log.Debug(result.Tree())
-	log.Info("Done")
 }

@@ -7,10 +7,15 @@ type Lexer struct {
 	ch      byte // current char
 	pos     int  // current position (on current char)
 	readPos int  // position after current char
+	nlsemi  bool // if "true" '\n' translate to ';'
 }
 
 func New(input string) *Lexer {
-	l := &Lexer{input: input}
+	l := &Lexer{
+		input:  input,
+		nlsemi: false,
+	}
+
 	l.readChar()
 	return l
 }
@@ -18,8 +23,12 @@ func New(input string) *Lexer {
 func (l *Lexer) NextToken() token.Token {
 	l.skipWhitespace()
 
+	nlsemi := false
+
 	var tok token.Token
 	switch l.ch {
+	case '\n':
+		tok = newToken(token.SEMICOLON, l.ch)
 	case '=':
 		if l.peekChar() == '=' {
 			l.readChar()
@@ -70,33 +79,44 @@ func (l *Lexer) NextToken() token.Token {
 	case '(':
 		tok = newToken(token.LPAR, l.ch)
 	case ')':
+		nlsemi = true
 		tok = newToken(token.RPAR, l.ch)
 	case '{':
 		tok = newToken(token.LBRACE, l.ch)
 	case '}':
+		nlsemi = true
 		tok = newToken(token.RBRACE, l.ch)
 	case '[':
 		tok = newToken(token.LBRACKET, l.ch)
 	case ']':
+		nlsemi = true
 		tok = newToken(token.RBRACKET, l.ch)
 	case '"':
 		tok.Type = token.STRING
 		tok.Literal = l.readString()
+		nlsemi = true
 	case 0:
 		tok = token.Token{Type: token.EOF, Literal: ""}
 	default:
 		if isLetter(l.ch) {
 			tok.Literal = l.readIdent()
 			tok.Type = token.LookupIdent(tok.Literal)
+
+			if tok.Type == token.IDENT || tok.Type == token.TRUE || tok.Type == token.FALSE {
+				l.nlsemi = true
+			}
 			return tok
 		} else if isDigit(l.ch) {
 			tok.Type = token.INT
 			tok.Literal = l.readNumber()
+			l.nlsemi = true
 			return tok
 		} else {
 			tok = newToken(token.ILLEGAL, l.ch)
 		}
 	}
+
+	l.nlsemi = nlsemi
 
 	l.readChar()
 	return tok
@@ -122,7 +142,7 @@ func (l *Lexer) peekChar() byte {
 }
 
 func (l *Lexer) skipWhitespace() {
-	for l.ch == ' ' || l.ch == '\n' || l.ch == '\t' || l.ch == '\r' {
+	for l.ch == ' ' || l.ch == '\n' && !l.nlsemi || l.ch == '\t' || l.ch == '\r' {
 		l.readChar()
 	}
 }
