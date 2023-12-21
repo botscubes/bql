@@ -72,6 +72,7 @@ func New(l *lexer.Lexer) *Parser {
 	p.prefixParsers[token.IF] = p.parseIfExpression
 	p.prefixParsers[token.STRING] = p.parseString
 	p.prefixParsers[token.LBRACKET] = p.parseArray
+	p.prefixParsers[token.FUNC] = p.parseFunction
 
 	// infix parse functions
 	p.infixParsers = make(map[token.TokenType]infixParseFn)
@@ -176,9 +177,11 @@ func (p *Parser) parseStatement() ast.Statement {
 	case token.IDENT:
 		if p.peekTokenIs(token.ASSIGN) {
 			return p.parseAssignStatement()
-		} else {
-			return p.parseExpressionStatement()
 		}
+
+		return p.parseExpressionStatement()
+	case token.RETURN:
+		return p.parseReturnStatement()
 	default:
 		return p.parseExpressionStatement()
 	}
@@ -227,6 +230,20 @@ func (p *Parser) parseBlockStatement() *ast.BlockStatement {
 	return block
 }
 
+func (p *Parser) parseReturnStatement() *ast.ReturnStatement {
+	stmt := &ast.ReturnStatement{Token: p.curToken}
+
+	p.nextToken()
+
+	stmt.Value = p.parseExpression(LOWEST)
+
+	if p.peekTokenIs(token.SEMICOLON) {
+		p.nextToken()
+	}
+
+	return stmt
+}
+
 func (p *Parser) parseExpression(precedence int) ast.Expression {
 	prefix := p.prefixParsers[p.curToken.Type]
 	if prefix == nil {
@@ -248,7 +265,56 @@ func (p *Parser) parseExpression(precedence int) ast.Expression {
 	}
 
 	return leftExp
+}
 
+func (p *Parser) parseFunction() ast.Expression {
+	node := &ast.FunctionLiteral{Token: p.curToken}
+
+	if !p.expectPeek(token.LPAR) {
+		return nil
+	}
+
+	node.Parameters = p.parseFunctionParameters()
+
+	if !p.expectPeek(token.LBRACE) {
+		return nil
+	}
+
+	node.Body = p.parseBlockStatement()
+
+	return node
+}
+
+func (p *Parser) parseFunctionParameters() []*ast.Ident {
+	identifiers := []*ast.Ident{}
+
+	if p.peekTokenIs(token.RPAR) {
+		p.nextToken()
+		return identifiers
+	}
+
+	for {
+		p.nextToken()
+		if !p.curTokenIs(token.IDENT) {
+			e := fmt.Sprintf("failed parse %q as ident", p.curToken.Literal)
+			p.errors = append(p.errors, e)
+			return nil
+		}
+
+		ident := &ast.Ident{Token: p.curToken, Value: p.curToken.Literal}
+		identifiers = append(identifiers, ident)
+		if !p.peekTokenIs(token.COMMA) {
+			break
+		}
+
+		p.nextToken()
+	}
+
+	if !p.expectPeek(token.RPAR) {
+		return nil
+	}
+
+	return identifiers
 }
 
 func (p *Parser) parseInteger() ast.Expression {

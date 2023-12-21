@@ -41,17 +41,21 @@ const (
 	RBRACKET = "]"
 
 	// keywords
-	IF    = "IF"
-	ELSE  = "ELSE"
-	TRUE  = "TRUE"
-	FALSE = "FALSE"
+	IF     = "IF"
+	ELSE   = "ELSE"
+	TRUE   = "TRUE"
+	FALSE  = "FALSE"
+	FUNC   = "FUNCTION"
+	RETURN = "RETURN"
 )
 
 var keywords = map[string]TokenType{
-	"if":    IF,
-	"else":  ELSE,
-	"true":  TRUE,
-	"false": FALSE,
+	"if":     IF,
+	"else":   ELSE,
+	"true":   TRUE,
+	"false":  FALSE,
+	"fn":     FUNC,
+	"return": RETURN,
 }
 
 func LookupIdent(ident string) TokenType {

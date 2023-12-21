@@ -118,6 +118,27 @@ func (bs *BlockStatement) ToString() string {
 	return out.String()
 }
 
+type ReturnStatement struct {
+	Token token.Token // return
+	Value Expression
+}
+
+func (rs *ReturnStatement) statementNode()       {}
+func (rs *ReturnStatement) TokenLiteral() string { return rs.Token.Literal }
+func (rs *ReturnStatement) ToString() string {
+	var out bytes.Buffer
+
+	out.WriteString(rs.TokenLiteral() + " ")
+
+	if rs.Value != nil {
+		out.WriteString(rs.Value.ToString())
+	}
+
+	out.WriteString(";")
+
+	return out.String()
+}
+
 // Expressions
 type IntegerLiteral struct {
 	Token token.Token // 5 6
@@ -210,6 +231,31 @@ func (ie *IfExpression) ToString() string {
 		out.WriteString(ie.Alternative.ToString())
 		out.WriteString(" } ")
 	}
+
+	return out.String()
+}
+
+type FunctionLiteral struct {
+	Token      token.Token // 'fn'
+	Parameters []*Ident
+	Body       *BlockStatement
+}
+
+func (fl *FunctionLiteral) expressionNode()      {}
+func (fl *FunctionLiteral) TokenLiteral() string { return fl.Token.Literal }
+func (fl *FunctionLiteral) ToString() string {
+	var out bytes.Buffer
+
+	params := []string{}
+	for _, p := range fl.Parameters {
+		params = append(params, p.ToString())
+	}
+
+	out.WriteString(fl.TokenLiteral())
+	out.WriteString("(")
+	out.WriteString(strings.Join(params, ", "))
+	out.WriteString(") ")
+	out.WriteString(fl.Body.ToString())
 
 	return out.String()
 }

@@ -34,6 +34,13 @@ if (x == 1) {
 2 + 3; y = 4
 "ABC" "qqq"
 if (true) { 1 } else { 0 }
+fn(){}
+fn(x){ x }
+
+q = fn(x,y,z){
+	r = x+y
+	return r * z
+}
 `
 
 	tests := []ExpectedToken{
@@ -123,6 +130,44 @@ if (true) { 1 } else { 0 }
 		{token.ELSE, "else"},
 		{token.LBRACE, "{"},
 		{token.INT, "0"},
+		{token.RBRACE, "}"},
+		{token.SEMICOLON, "\n"},
+		{token.FUNC, "fn"},
+		{token.LPAR, "("},
+		{token.RPAR, ")"},
+		{token.LBRACE, "{"},
+		{token.RBRACE, "}"},
+		{token.SEMICOLON, "\n"},
+		{token.FUNC, "fn"},
+		{token.LPAR, "("},
+		{token.IDENT, "x"},
+		{token.RPAR, ")"},
+		{token.LBRACE, "{"},
+		{token.IDENT, "x"},
+		{token.RBRACE, "}"},
+		{token.SEMICOLON, "\n"},
+		{token.IDENT, "q"},
+		{token.ASSIGN, "="},
+		{token.FUNC, "fn"},
+		{token.LPAR, "("},
+		{token.IDENT, "x"},
+		{token.COMMA, ","},
+		{token.IDENT, "y"},
+		{token.COMMA, ","},
+		{token.IDENT, "z"},
+		{token.RPAR, ")"},
+		{token.LBRACE, "{"},
+		{token.IDENT, "r"},
+		{token.ASSIGN, "="},
+		{token.IDENT, "x"},
+		{token.PLUS, "+"},
+		{token.IDENT, "y"},
+		{token.SEMICOLON, "\n"},
+		{token.RETURN, "return"},
+		{token.IDENT, "r"},
+		{token.STAR, "*"},
+		{token.IDENT, "z"},
+		{token.SEMICOLON, "\n"},
 		{token.RBRACE, "}"},
 		{token.SEMICOLON, "\n"},
 		{token.EOF, ""},

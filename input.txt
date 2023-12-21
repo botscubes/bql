@@ -15,3 +15,10 @@ x = [s, -5 * 6, 33]
 empty = []
 x = 2 + 3; y = 4
 if (x == y) { 1 } else { 0 }
+
+fn(x){ x }
+
+q = fn(x,y,z){
+	r = x+y
+	return r * z
+}
