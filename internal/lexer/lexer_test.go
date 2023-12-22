@@ -41,6 +41,9 @@ q = fn(x,y,z){
 	r = x+y
 	return r * z
 }
+
+a && true;
+b || true;
 `
 
 	tests := []ExpectedToken{
@@ -170,6 +173,14 @@ q = fn(x,y,z){
 		{token.SEMICOLON, "\n"},
 		{token.RBRACE, "}"},
 		{token.SEMICOLON, "\n"},
+		{token.IDENT, "a"},
+		{token.LAND, "&&"},
+		{token.TRUE, "true"},
+		{token.SEMICOLON, ";"},
+		{token.IDENT, "b"},
+		{token.LOR, "||"},
+		{token.TRUE, "true"},
+		{token.SEMICOLON, ";"},
 		{token.EOF, ""},
 	}
 

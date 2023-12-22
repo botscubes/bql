@@ -100,6 +100,22 @@ func (l *Lexer) NextToken() (token.Token, token.Pos) {
 		tok.Type = token.STRING
 		tok.Literal = l.readString()
 		nlsemi = true
+	case '&':
+		if l.peekChar() == '&' {
+			l.readChar()
+			literal := "&&"
+			tok = token.Token{Type: token.LAND, Literal: literal}
+		} else {
+			tok = newToken(token.ILLEGAL, l.ch)
+		}
+	case '|':
+		if l.peekChar() == '|' {
+			l.readChar()
+			literal := "||"
+			tok = token.Token{Type: token.LOR, Literal: literal}
+		} else {
+			tok = newToken(token.ILLEGAL, l.ch)
+		}
 	case 0:
 		tok = token.Token{Type: token.EOF, Literal: ""}
 	default:

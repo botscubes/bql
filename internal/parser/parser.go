@@ -13,6 +13,8 @@ import (
 const (
 	_ int = iota
 	LOWEST
+	LOR         // ||
+	LAND        // &&
 	EQUALS      // ==
 	LESSGREATER // > or < or <= or >=
 	SUM         // +
@@ -23,6 +25,8 @@ const (
 
 // TODO: create switch and move to token.go
 var precedences = map[token.TokenType]int{
+	token.LOR:     LOR,
+	token.LAND:    LAND,
 	token.EQ:      EQUALS,
 	token.NEQ:     EQUALS,
 	token.LT:      LESSGREATER,
@@ -89,6 +93,8 @@ func New(l *lexer.Lexer) *Parser {
 	p.infixParsers[token.GEQ] = p.parseInfixExpression
 	p.infixParsers[token.LT] = p.parseInfixExpression
 	p.infixParsers[token.GT] = p.parseInfixExpression
+	p.infixParsers[token.LOR] = p.parseInfixExpression
+	p.infixParsers[token.LAND] = p.parseInfixExpression
 	p.infixParsers[token.LPAR] = p.parseCallExpression
 
 	// read curToken and peekToken

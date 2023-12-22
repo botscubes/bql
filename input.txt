@@ -22,3 +22,7 @@ q = fn(x,y,z){
 	r = x+y
 	return r * z
 }
+
+if (a > b && true || false) {
+	return true && 1;
+}

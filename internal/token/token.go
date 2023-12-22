@@ -35,6 +35,9 @@ const (
 	LT  = "<"
 	GT  = ">"
 
+	LAND = "&&"
+	LOR  = "||"
+
 	COMMA     = ","
 	SEMICOLON = ";"
 

@@ -274,6 +274,18 @@ func TestOperatorPrecedence(t *testing.T) {
 			"!(true != false)",
 			"(!(true != false))",
 		},
+		{
+			"a || b && c",
+			"(a || (b && c))",
+		},
+		{
+			"(a || b) && c || d",
+			"(((a || b) && c) || d)",
+		},
+		{
+			"a > b && c",
+			"((a > b) && c)",
+		},
 	}
 
 	for _, test := range tests {
