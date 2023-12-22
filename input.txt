@@ -7,7 +7,7 @@ if(x >= 10) {
 
 r = add(1, 2 * 8, t, 2 + 3);
 
-s = "abc"
+s = "abc -1 88 \n tu"
 
 put(s, "oop")
 

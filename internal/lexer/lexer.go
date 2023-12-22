@@ -8,19 +8,24 @@ type Lexer struct {
 	pos     int  // current position (on current char)
 	readPos int  // position after current char
 	nlsemi  bool // if "true" '\n' translate to ';'
+	loPos   token.Pos
 }
 
 func New(input string) *Lexer {
 	l := &Lexer{
 		input:  input,
 		nlsemi: false,
+		loPos: token.Pos{
+			Line:   1,
+			Offset: -1,
+		},
 	}
 
 	l.readChar()
 	return l
 }
 
-func (l *Lexer) NextToken() token.Token {
+func (l *Lexer) NextToken() (token.Token, token.Pos) {
 	l.skipWhitespace()
 
 	nlsemi := false
@@ -105,12 +110,12 @@ func (l *Lexer) NextToken() token.Token {
 			if tok.Type == token.IDENT || tok.Type == token.TRUE || tok.Type == token.FALSE {
 				l.nlsemi = true
 			}
-			return tok
+			return tok, l.loPos
 		} else if isDigit(l.ch) {
 			tok.Type = token.INT
 			tok.Literal = l.readNumber()
 			l.nlsemi = true
-			return tok
+			return tok, l.loPos
 		} else {
 			tok = newToken(token.ILLEGAL, l.ch)
 		}
@@ -119,7 +124,7 @@ func (l *Lexer) NextToken() token.Token {
 	l.nlsemi = nlsemi
 
 	l.readChar()
-	return tok
+	return tok, l.loPos
 }
 
 func (l *Lexer) readChar() {
@@ -130,6 +135,7 @@ func (l *Lexer) readChar() {
 	}
 
 	l.pos = l.readPos
+	l.loPos.Offset += 1
 	l.readPos += 1
 }
 
@@ -144,6 +150,10 @@ func (l *Lexer) peekChar() byte {
 func (l *Lexer) skipWhitespace() {
 	for l.ch == ' ' || l.ch == '\n' && !l.nlsemi || l.ch == '\t' || l.ch == '\r' {
 		l.readChar()
+
+		if l.ch == '\n' {
+			l.onNewLine()
+		}
 	}
 }
 
@@ -184,4 +194,9 @@ func (l *Lexer) readString() string {
 
 func newToken(tokenType token.TokenType, ch byte) token.Token {
 	return token.Token{Type: tokenType, Literal: string(ch)}
+}
+
+func (l *Lexer) onNewLine() {
+	l.loPos.Line += 1
+	l.loPos.Offset = -1
 }

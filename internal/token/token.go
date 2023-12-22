@@ -7,6 +7,11 @@ type Token struct {
 	Literal string
 }
 
+type Pos struct {
+	Line   int
+	Offset int
+}
+
 const (
 	ILLEGAL = "ILLEGAL"
 	EOF     = "EOF"

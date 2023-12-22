@@ -26,8 +26,8 @@ func Start(log *zap.SugaredLogger, fileName string) {
 }
 
 func print_tokens(log *zap.SugaredLogger, l *lexer.Lexer) {
-	for tok := l.NextToken(); tok.Type != token.EOF; tok = l.NextToken() {
-		log.Debugf("Token: %q \t Value: %q", tok.Type, tok.Literal)
+	for tok, pos := l.NextToken(); tok.Type != token.EOF; tok, pos = l.NextToken() {
+		log.Debugf("Token: %q \t Value: %q \t Pos: %d:%d", tok.Type, tok.Literal, pos.Line, pos.Offset)
 	}
 }
 

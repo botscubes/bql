@@ -46,6 +46,8 @@ type Parser struct {
 	l         *lexer.Lexer
 	curToken  token.Token
 	peekToken token.Token
+	peekPos   token.Pos
+	curPos    token.Pos
 
 	prefixParsers map[token.TokenType]prefixParseFn
 	infixParsers  map[token.TokenType]infixParseFn
@@ -100,9 +102,15 @@ func (p *Parser) Errors() []string {
 	return p.errors
 }
 
+func (p *Parser) newError(e string) {
+	mes := fmt.Sprintf("pos: %d:%d: %s", p.curPos.Line, p.curPos.Offset, e)
+	p.errors = append(p.errors, mes)
+}
+
 func (p *Parser) nextToken() {
 	p.curToken = p.peekToken
-	p.peekToken = p.l.NextToken()
+	p.curPos = p.peekPos
+	p.peekToken, p.peekPos = p.l.NextToken()
 }
 
 func (p *Parser) curTokenIs(t token.TokenType) bool {
@@ -126,8 +134,7 @@ func (p *Parser) expectPeek(t token.TokenType) bool {
 		p.nextToken()
 		return true
 	} else {
-		e := fmt.Sprintf("expected next token: %s, got %s", t, p.peekToken.Type)
-		p.errors = append(p.errors, e)
+		p.newError(fmt.Sprintf("expected next token: %s, got %s", t, p.peekToken.Type))
 		return false
 	}
 }
@@ -143,8 +150,7 @@ func (p *Parser) curPrecedence() int {
 func (p *Parser) expectSemi() bool {
 	if !p.curTokenIs(token.RBRACE) && !p.curTokenIs(token.EOF) {
 		if !p.curTokenIs(token.SEMICOLON) {
-			e := fmt.Sprintf("expected ; at end of statement, got %s", p.curToken.Literal)
-			p.errors = append(p.errors, e)
+			p.newError(fmt.Sprintf("expected ; at end of statement, got %s", p.curToken.Literal))
 			return false
 		}
 		p.nextToken()
@@ -247,8 +253,7 @@ func (p *Parser) parseReturnStatement() *ast.ReturnStatement {
 func (p *Parser) parseExpression(precedence int) ast.Expression {
 	prefix := p.prefixParsers[p.curToken.Type]
 	if prefix == nil {
-		e := fmt.Sprintf("prefix parse function for %s not found", p.curToken.Type)
-		p.errors = append(p.errors, e)
+		p.newError(fmt.Sprintf("prefix parse function for %s not found", p.curToken.Type))
 		return nil
 	}
 	leftExp := prefix()
@@ -296,8 +301,7 @@ func (p *Parser) parseFunctionParameters() []*ast.Ident {
 	for {
 		p.nextToken()
 		if !p.curTokenIs(token.IDENT) {
-			e := fmt.Sprintf("failed parse %q as ident", p.curToken.Literal)
-			p.errors = append(p.errors, e)
+			p.newError(fmt.Sprintf("failed parse %q as ident", p.curToken.Literal))
 			return nil
 		}
 
@@ -322,8 +326,7 @@ func (p *Parser) parseInteger() ast.Expression {
 
 	value, err := strconv.ParseInt(p.curToken.Literal, 0, 64)
 	if err != nil {
-		e := fmt.Sprintf("failed parse %q as integer", p.curToken.Literal)
-		p.errors = append(p.errors, e)
+		p.newError(fmt.Sprintf("failed parse %q as integer", p.curToken.Literal))
 		return nil
 	}
 
