@@ -21,24 +21,26 @@ const (
 	PRODUCT     // * % /
 	PREFIX      // -x or !x
 	CALL        // call(x) or ( expr )
+	INDEX       // [
 )
 
 // TODO: create switch and move to token.go
 var precedences = map[token.TokenType]int{
-	token.LOR:     LOR,
-	token.LAND:    LAND,
-	token.EQ:      EQUALS,
-	token.NEQ:     EQUALS,
-	token.LT:      LESSGREATER,
-	token.GT:      LESSGREATER,
-	token.GEQ:     LESSGREATER,
-	token.LEQ:     LESSGREATER,
-	token.PLUS:    SUM,
-	token.MINUS:   SUM,
-	token.SLASH:   PRODUCT,
-	token.STAR:    PRODUCT,
-	token.PERCENT: PRODUCT,
-	token.LPAR:    CALL,
+	token.LOR:      LOR,
+	token.LAND:     LAND,
+	token.EQ:       EQUALS,
+	token.NEQ:      EQUALS,
+	token.LT:       LESSGREATER,
+	token.GT:       LESSGREATER,
+	token.GEQ:      LESSGREATER,
+	token.LEQ:      LESSGREATER,
+	token.PLUS:     SUM,
+	token.MINUS:    SUM,
+	token.SLASH:    PRODUCT,
+	token.STAR:     PRODUCT,
+	token.PERCENT:  PRODUCT,
+	token.LPAR:     CALL,
+	token.LBRACKET: INDEX,
 }
 
 type (
