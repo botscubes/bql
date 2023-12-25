@@ -44,6 +44,10 @@ q = fn(x,y,z){
 
 a && true;
 b || true;
+
+qwe123;
+_ewq;
+_99;
 `
 
 	tests := []ExpectedToken{
@@ -180,6 +184,12 @@ b || true;
 		{token.IDENT, "b"},
 		{token.LOR, "||"},
 		{token.TRUE, "true"},
+		{token.SEMICOLON, ";"},
+		{token.IDENT, "qwe123"},
+		{token.SEMICOLON, ";"},
+		{token.IDENT, "_ewq"},
+		{token.SEMICOLON, ";"},
+		{token.IDENT, "_99"},
 		{token.SEMICOLON, ";"},
 		{token.EOF, ""},
 	}

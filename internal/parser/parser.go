@@ -65,9 +65,6 @@ func New(l *lexer.Lexer) *Parser {
 		l: l,
 	}
 
-	// LBRACKET = "["
-	// RBRACKET = "]"
-
 	// prefix parse functions
 	p.prefixParsers = make(map[token.TokenType]prefixParseFn)
 	p.prefixParsers[token.IDENT] = p.parseIdent
@@ -206,7 +203,7 @@ func (p *Parser) parseAssignStatement() *ast.AssignStatement {
 		Name: &ast.Ident{Token: p.curToken, Value: p.curToken.Literal},
 	}
 
-	// skip ident and ==
+	// skip ident and =
 	p.nextToken()
 	p.nextToken()
 

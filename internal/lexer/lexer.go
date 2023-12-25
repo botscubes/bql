@@ -183,7 +183,7 @@ func isDigit(ch byte) bool {
 
 func (l *Lexer) readIdent() string {
 	position := l.pos
-	for isLetter(l.ch) {
+	for isLetter(l.ch) || isDigit(l.ch) {
 		l.readChar()
 	}
 	return l.input[position:l.pos]
