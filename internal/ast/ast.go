@@ -291,7 +291,7 @@ type StringLiteral struct {
 
 func (sl *StringLiteral) expressionNode()      {}
 func (sl *StringLiteral) TokenLiteral() string { return sl.Token.Literal }
-func (sl *StringLiteral) ToString() string     { return sl.Token.Literal }
+func (sl *StringLiteral) ToString() string     { return `"` + sl.Token.Literal + `"` }
 
 type ArrayLiteral struct {
 	Token    token.Token // '['

@@ -652,6 +652,10 @@ func testInfixExpression(
 		return false
 	}
 
+	if !testLiteralExpression(t, ev.Right, right) {
+		return false
+	}
+
 	return true
 }
 
