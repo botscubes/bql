@@ -5,6 +5,11 @@ import (
 	"github.com/botscubes/bql/internal/object"
 )
 
+var (
+	TRUE  = &object.Boolean{Value: true}
+	FALSE = &object.Boolean{Value: false}
+)
+
 func Eval(n ast.Node) object.Object {
 	switch node := n.(type) {
 	case *ast.Program:
@@ -15,6 +20,13 @@ func Eval(n ast.Node) object.Object {
 
 	case *ast.IntegerLiteral:
 		return &object.Integer{Value: node.Value}
+
+	case *ast.Boolean:
+		if node.Value {
+			return TRUE
+		}
+
+		return FALSE
 	}
 
 	return nil
