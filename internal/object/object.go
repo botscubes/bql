@@ -10,9 +10,18 @@ type Object interface {
 }
 
 const (
+	ERROR_OBJ = "ERROR"
+
 	INTEGER_OBJ = "INTEGER"
 	BOOLEAN_OBJ = "BOOLEAN"
 )
+
+type Error struct {
+	Message string
+}
+
+func (e *Error) Type() ObjectType { return ERROR_OBJ }
+func (e *Error) ToString() string { return "error: " + e.Message }
 
 type Integer struct {
 	Value int64
