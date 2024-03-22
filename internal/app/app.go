@@ -3,6 +3,7 @@ package app
 import (
 	"os"
 
+	"github.com/botscubes/bql/internal/evaluator"
 	"github.com/botscubes/bql/internal/parser"
 	"github.com/botscubes/bql/internal/token"
 
@@ -18,9 +19,23 @@ func Start(log *zap.SugaredLogger, fileName string) {
 
 	l := lexer.New(string(input))
 
-	print_ast(log, l)
+	// print_ast(log, l)
 
 	// print_tokens(log, l)
+
+	p := parser.New(l)
+	program := p.ParseProgram()
+	if len(p.Errors()) != 0 {
+		for _, e := range p.Errors() {
+			log.Errorln(e)
+		}
+		return
+	}
+
+	ev := evaluator.Eval(program)
+	if ev != nil {
+		log.Debug(ev.ToString())
+	}
 
 	log.Info("Done")
 }
