@@ -15,6 +15,8 @@ func TestEvalIntegerExpression(t *testing.T) {
 	}{
 		{"4", 4},
 		{"12", 12},
+		{"-5", -5},
+		{"-15", -15},
 	}
 
 	for _, test := range tests {
@@ -30,6 +32,23 @@ func TestEvalBooleanExpresion(t *testing.T) {
 	}{
 		{"true", true},
 		{"false", false},
+	}
+
+	for _, test := range tests {
+		ev := getEvaluated(test.input)
+		testBoolean(t, ev, test.excepted)
+	}
+}
+
+func TestExclaminationOperator(t *testing.T) {
+	tests := []struct {
+		input    string
+		excepted bool
+	}{
+		{"!true", false},
+		{"!false", true},
+		{"!!false", false},
+		{"!!true", true},
 	}
 
 	for _, test := range tests {
