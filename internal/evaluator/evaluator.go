@@ -16,6 +16,21 @@ func newError(formating string, parameters ...any) *object.Error {
 	return &object.Error{Message: fmt.Sprintf(formating, parameters...)}
 }
 
+func isError(obj object.Object) bool {
+	if obj != nil {
+		return obj.Type() == object.ERROR_OBJ
+	}
+	return false
+}
+
+func boolToBooleanObj(b bool) *object.Boolean {
+	if b {
+		return TRUE
+	}
+
+	return FALSE
+}
+
 func Eval(n ast.Node) object.Object {
 	switch node := n.(type) {
 	case *ast.Program:
@@ -36,7 +51,24 @@ func Eval(n ast.Node) object.Object {
 
 	case *ast.PrefixExpression:
 		right := Eval(node.Right)
+		if isError(right) {
+			return right
+		}
+
 		return evalPrefixExpressing(node.Operator, right)
+
+	case *ast.InfixExpression:
+		left := Eval(node.Left)
+		if isError(left) {
+			return left
+		}
+
+		right := Eval(node.Right)
+		if isError(right) {
+			return right
+		}
+
+		return evalInfixExpression(node.Operator, left, right)
 	}
 
 	return nil
@@ -63,6 +95,19 @@ func evalPrefixExpressing(op string, right object.Object) object.Object {
 	}
 }
 
+func evalInfixExpression(op string, left object.Object, right object.Object) object.Object {
+	switch {
+	case left.Type() == object.INTEGER_OBJ && right.Type() == object.INTEGER_OBJ:
+		return evalIntInfixExpression(op, left, right)
+	case op == "==":
+		return boolToBooleanObj(left == right)
+	case op == "!=":
+		return boolToBooleanObj(left != right)
+	default:
+		return newError("unknown operator: %s %s %s", left.Type(), op, right.Type())
+	}
+}
+
 func evalExclOperatorExpression(right object.Object) object.Object {
 	switch right {
 	case TRUE:
@@ -81,4 +126,33 @@ func evalMinusPrefixOperatorExpression(right object.Object) object.Object {
 
 	value := right.(*object.Integer).Value
 	return &object.Integer{Value: -value}
+}
+
+func evalIntInfixExpression(op string, left object.Object, right object.Object) object.Object {
+	lVal := left.(*object.Integer).Value
+	rVal := right.(*object.Integer).Value
+	switch op {
+	case "+":
+		return &object.Integer{Value: lVal + rVal}
+	case "-":
+		return &object.Integer{Value: lVal - rVal}
+	case "*":
+		return &object.Integer{Value: lVal * rVal}
+	case "/":
+		return &object.Integer{Value: lVal / rVal}
+	case "==":
+		return boolToBooleanObj(lVal == rVal)
+	case "!=":
+		return boolToBooleanObj(lVal != rVal)
+	case "<":
+		return boolToBooleanObj(lVal < rVal)
+	case ">":
+		return boolToBooleanObj(lVal > rVal)
+	case "<=":
+		return boolToBooleanObj(lVal <= rVal)
+	case ">=":
+		return boolToBooleanObj(lVal >= rVal)
+	default:
+		return newError("unknown operator: %s %s %s", left.Type(), op, right.Type())
+	}
 }
