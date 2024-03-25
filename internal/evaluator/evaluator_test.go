@@ -90,6 +90,34 @@ func TestExclaminationOperator(t *testing.T) {
 	}
 }
 
+func TestIfElseExpression(t *testing.T) {
+	tests := []struct {
+		input    string
+		excepted any
+	}{
+		{"if (true) { 50 }", 50},
+		{"if (false) { 50 }", nil},
+		{"if (!false) { 50 }", 50},
+		{"if (1 == 1) { 50 }", 50},
+		{"if (1 > 2) { 50 }", nil},
+		{"if (1 < 2) { 50 }", 50},
+		{"if (1 < 2) { 50 } else { 100 }", 50},
+		{"if (1 > 2) { 50 } else { 100 }", 100},
+		{"if (true || false) { 50 } else { 100 }", 50},
+		{"if (true && false) { 50 } else { 100 }", 100},
+	}
+
+	for _, test := range tests {
+		ev := getEvaluated(test.input)
+		intVal, ok := test.excepted.(int)
+		if ok {
+			testInteger(t, ev, int64(intVal))
+		} else {
+			testNull(t, ev)
+		}
+	}
+}
+
 func getEvaluated(input string) object.Object {
 	l := lexer.New(input)
 	p := parser.New(l)
@@ -119,4 +147,12 @@ func testBoolean(t *testing.T, obj object.Object, expected bool, in string) {
 	if res.Value != expected {
 		t.Errorf("obj wrong value. got: %t expected: %t in test: %s", res.Value, expected, in)
 	}
+}
+
+func testNull(t *testing.T, obj object.Object) bool {
+	if obj != NULL {
+		t.Errorf("obj is not NULL. got: %+v", obj)
+	}
+
+	return true
 }

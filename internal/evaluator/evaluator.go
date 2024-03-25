@@ -10,6 +10,7 @@ import (
 var (
 	TRUE  = &object.Boolean{Value: true}
 	FALSE = &object.Boolean{Value: false}
+	NULL  = &object.Null{}
 )
 
 func newError(formating string, parameters ...any) *object.Error {
@@ -35,6 +36,9 @@ func Eval(n ast.Node) object.Object {
 	switch node := n.(type) {
 	case *ast.Program:
 		return evalProgram(node)
+
+	case *ast.BlockStatement:
+		return evalBlockStatement(node)
 
 	case *ast.ExpressionStatement:
 		return Eval(node.Expression)
@@ -69,6 +73,9 @@ func Eval(n ast.Node) object.Object {
 		}
 
 		return evalInfixExpression(node.Operator, left, right)
+
+	case *ast.IfExpression:
+		return evalIfExpression(node)
 	}
 
 	return nil
@@ -79,6 +86,19 @@ func evalProgram(program *ast.Program) object.Object {
 
 	for _, stmt := range program.Statements {
 		result = Eval(stmt)
+	}
+
+	return result
+}
+
+func evalBlockStatement(block *ast.BlockStatement) object.Object {
+	var result object.Object
+
+	for _, stmt := range block.Statements {
+		result = Eval(stmt)
+		if isError(result) {
+			return result
+		}
 	}
 
 	return result
@@ -160,5 +180,24 @@ func evalIntInfixExpression(op string, left object.Object, right object.Object) 
 		return boolToBooleanObj(lVal >= rVal)
 	default:
 		return newError("unknown operator: %s %s %s", left.Type(), op, right.Type())
+	}
+}
+
+func evalIfExpression(node *ast.IfExpression) object.Object {
+	condition := Eval(node.Condition)
+	if isError(condition) {
+		return condition
+	}
+
+	if condition != TRUE && condition != FALSE {
+		return newError("non boolean condition in if statement")
+	}
+
+	if condition == TRUE {
+		return Eval(node.Consequence)
+	} else if node.Alternative != nil {
+		return Eval(node.Alternative)
+	} else {
+		return NULL
 	}
 }

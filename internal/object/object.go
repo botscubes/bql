@@ -11,10 +11,16 @@ type Object interface {
 
 const (
 	ERROR_OBJ = "ERROR"
+	NULL_OBJ  = "NULL"
 
 	INTEGER_OBJ = "INTEGER"
 	BOOLEAN_OBJ = "BOOLEAN"
 )
+
+type Null struct{}
+
+func (n *Null) Type() ObjectType { return NULL_OBJ }
+func (n *Null) ToString() string { return "Null" }
 
 type Error struct {
 	Message string
