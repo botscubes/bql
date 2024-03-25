@@ -41,11 +41,28 @@ func TestEvalBooleanExpresion(t *testing.T) {
 	}{
 		{"true", true},
 		{"false", false},
+		{"1 == 1", true},
+		{"1 != 1", false},
+		{"1 < 2", true},
+		{"1 > 2", false},
+		{"1 <= 2", true},
+		{"1 <= 1", true},
+		{"1 >= 2", false},
+		{"1 >= 1", true},
+		{"true == true", true},
+		{"false == false", true},
+		{"true == false", false},
+		{"true != false", true},
+		{"(true == false) == false", true},
+		{"(1 == 1) == true", true},
+		{"(2 > 1) == true", true},
+		{"(2 < 1) == false", true},
+		{"(1 <= 1) == false", false},
 	}
 
 	for _, test := range tests {
 		ev := getEvaluated(test.input)
-		testBoolean(t, ev, test.excepted)
+		testBoolean(t, ev, test.excepted, test.input)
 	}
 }
 
@@ -62,7 +79,7 @@ func TestExclaminationOperator(t *testing.T) {
 
 	for _, test := range tests {
 		ev := getEvaluated(test.input)
-		testBoolean(t, ev, test.excepted)
+		testBoolean(t, ev, test.excepted, test.input)
 	}
 }
 
@@ -85,7 +102,7 @@ func testInteger(t *testing.T, obj object.Object, expected int64) {
 	}
 }
 
-func testBoolean(t *testing.T, obj object.Object, expected bool) {
+func testBoolean(t *testing.T, obj object.Object, expected bool, in string) {
 	res, ok := obj.(*object.Boolean)
 	if !ok {
 		t.Errorf("obj not Boolean got:%+v", obj)
@@ -93,6 +110,6 @@ func testBoolean(t *testing.T, obj object.Object, expected bool) {
 	}
 
 	if res.Value != expected {
-		t.Errorf("obj wrong value. got: %t expected: %t", res.Value, expected)
+		t.Errorf("obj wrong value. got: %t expected: %t in test: %s", res.Value, expected, in)
 	}
 }
