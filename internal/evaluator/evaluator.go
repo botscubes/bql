@@ -103,6 +103,10 @@ func evalInfixExpression(op string, left object.Object, right object.Object) obj
 		return boolToBooleanObj(left == right)
 	case op == "!=":
 		return boolToBooleanObj(left != right)
+	case op == "||":
+		return boolToBooleanObj(left.(*object.Boolean).Value || right.(*object.Boolean).Value)
+	case op == "&&":
+		return boolToBooleanObj(left.(*object.Boolean).Value && right.(*object.Boolean).Value)
 	default:
 		return newError("unknown operator: %s %s %s", left.Type(), op, right.Type())
 	}
@@ -140,6 +144,8 @@ func evalIntInfixExpression(op string, left object.Object, right object.Object) 
 		return &object.Integer{Value: lVal * rVal}
 	case "/":
 		return &object.Integer{Value: lVal / rVal}
+	case "%":
+		return &object.Integer{Value: lVal % rVal}
 	case "==":
 		return boolToBooleanObj(lVal == rVal)
 	case "!=":
