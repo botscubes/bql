@@ -13,6 +13,8 @@ const (
 	ERROR_OBJ = "ERROR"
 	NULL_OBJ  = "NULL"
 
+	RETURN_VALUE_OBJ = "RETURN_VALUE"
+
 	INTEGER_OBJ = "INTEGER"
 	BOOLEAN_OBJ = "BOOLEAN"
 )
@@ -28,6 +30,13 @@ type Error struct {
 
 func (e *Error) Type() ObjectType { return ERROR_OBJ }
 func (e *Error) ToString() string { return "error: " + e.Message }
+
+type Return struct {
+	Value Object
+}
+
+func (r *Return) Type() ObjectType { return RETURN_VALUE_OBJ }
+func (r *Return) ToString() string { return r.Value.ToString() }
 
 type Integer struct {
 	Value int64

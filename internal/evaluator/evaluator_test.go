@@ -118,6 +118,38 @@ func TestIfElseExpression(t *testing.T) {
 	}
 }
 
+func TestReturnStatement(t *testing.T) {
+	tests := []struct {
+		input    string
+		excepted int64
+	}{
+		{"return 15", 15},
+		{"return 25; 1;", 25},
+		{"if (true) { return 99 }", 99},
+		{`
+if (1 > 0) {
+	if (2 > 0) {
+		return 3
+	}
+
+	return 1;
+}`, 3},
+		{`
+if (0 == 0) {
+	if (2 == 0) {
+		return 3
+	}
+
+	return 1;
+}`, 1},
+	}
+
+	for _, test := range tests {
+		ev := getEvaluated(test.input)
+		testInteger(t, ev, test.excepted)
+	}
+}
+
 func getEvaluated(input string) object.Object {
 	l := lexer.New(input)
 	p := parser.New(l)

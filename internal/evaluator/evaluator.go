@@ -43,6 +43,14 @@ func Eval(n ast.Node) object.Object {
 	case *ast.ExpressionStatement:
 		return Eval(node.Expression)
 
+	case *ast.ReturnStatement:
+		val := Eval(node.Value)
+		if isError(val) {
+			return val
+		}
+
+		return &object.Return{Value: val}
+
 	case *ast.IntegerLiteral:
 		return &object.Integer{Value: node.Value}
 
@@ -86,6 +94,13 @@ func evalProgram(program *ast.Program) object.Object {
 
 	for _, stmt := range program.Statements {
 		result = Eval(stmt)
+
+		switch r := result.(type) {
+		case *object.Return:
+			return r.Value
+		case *object.Error:
+			return r
+		}
 	}
 
 	return result
@@ -96,8 +111,10 @@ func evalBlockStatement(block *ast.BlockStatement) object.Object {
 
 	for _, stmt := range block.Statements {
 		result = Eval(stmt)
-		if isError(result) {
-			return result
+		if result != nil {
+			if result.Type() == object.RETURN_VALUE_OBJ || result.Type() == object.ERROR_OBJ {
+				return result
+			}
 		}
 	}
 
