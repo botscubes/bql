@@ -144,6 +144,8 @@ func evalInfixExpression(op string, left object.Object, right object.Object) obj
 		return boolToBooleanObj(left.(*object.Boolean).Value || right.(*object.Boolean).Value)
 	case op == "&&":
 		return boolToBooleanObj(left.(*object.Boolean).Value && right.(*object.Boolean).Value)
+	case left.Type() != right.Type():
+		return newError("type mismatch: %s %s %s", left.Type(), op, right.Type())
 	default:
 		return newError("unknown operator: %s %s %s", left.Type(), op, right.Type())
 	}

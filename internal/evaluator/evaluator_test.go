@@ -150,6 +150,41 @@ if (0 == 0) {
 	}
 }
 
+func TestErrorHandling(t *testing.T) {
+	tests := []struct {
+		input    string
+		excepted string
+	}{
+		{"true + false", "unknown operator: BOOLEAN + BOOLEAN"},
+		{"1; true - false; 2", "unknown operator: BOOLEAN - BOOLEAN"},
+		{"1; true + false + true + true; 2", "unknown operator: BOOLEAN + BOOLEAN"},
+		{"-true", "unknown operator: -BOOLEAN"},
+		{"true + 3", "type mismatch: BOOLEAN + INTEGER"},
+		{"3 * false", "type mismatch: INTEGER * BOOLEAN"},
+		{"if (3) { 1 }", "non boolean condition in if statement"},
+		{`
+if (1 > 0) {
+	if (2 > 0) {
+		return true + false
+	}
+
+	return 1;
+}`, "unknown operator: BOOLEAN + BOOLEAN"},
+	}
+
+	for _, test := range tests {
+		ev := getEvaluated(test.input)
+		err, ok := ev.(*object.Error)
+		if !ok {
+			t.Errorf("non error object returned: %T - %+v", ev, ev)
+		} else {
+			if err.Message != test.excepted {
+				t.Errorf("wrong error message. got: %q expected: %q", err.Message, test.excepted)
+			}
+		}
+	}
+}
+
 func getEvaluated(input string) object.Object {
 	l := lexer.New(input)
 	p := parser.New(l)
