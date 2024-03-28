@@ -205,6 +205,24 @@ func TestEvalAssignExpression(t *testing.T) {
 	}
 }
 
+func TestFunctionCall(t *testing.T) {
+	tests := []struct {
+		input    string
+		excepted int64
+	}{
+		{"x = fn(x){ x }; x(10);", 10},
+		{"x = fn(x, y){ return x * y }; x(10, 9);", 90},
+		{"x = fn(x, y, z){ return x * (y - z) }; x(10, 9, 1);", 80},
+		{"x = fn(x, y){ return x + y }; x(10, x(x(1, 1), x(3, 5)));", 20},
+		{"fn(x){ x }(5)", 5},
+	}
+
+	for _, test := range tests {
+		ev := getEvaluated(test.input)
+		testInteger(t, ev, test.excepted)
+	}
+}
+
 func getEvaluated(input string) object.Object {
 	l := lexer.New(input)
 	p := parser.New(l)

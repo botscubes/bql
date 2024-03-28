@@ -1,6 +1,12 @@
 package object
 
-import "fmt"
+import (
+	"bytes"
+	"fmt"
+	"strings"
+
+	"github.com/botscubes/bql/internal/ast"
+)
 
 type ObjectType = string
 
@@ -17,6 +23,8 @@ const (
 
 	INTEGER_OBJ = "INTEGER"
 	BOOLEAN_OBJ = "BOOLEAN"
+
+	FUNCTION_OBJ = "FUNCTION"
 )
 
 type Null struct{}
@@ -51,3 +59,27 @@ type Boolean struct {
 
 func (b *Boolean) Type() ObjectType { return BOOLEAN_OBJ }
 func (b *Boolean) ToString() string { return fmt.Sprintf("%t", b.Value) }
+
+type Function struct {
+	Parameters []*ast.Ident
+	Body       *ast.BlockStatement
+	Env        *Env
+}
+
+func (f *Function) Type() ObjectType { return FUNCTION_OBJ }
+func (f *Function) ToString() string {
+	var out bytes.Buffer
+
+	params := []string{}
+	for _, p := range f.Parameters {
+		params = append(params, p.ToString())
+	}
+
+	out.WriteString("fn")
+	out.WriteString("(")
+	out.WriteString(strings.Join(params, ", "))
+	out.WriteString(") ")
+	out.WriteString(f.Body.ToString())
+
+	return out.String()
+}
