@@ -11,7 +11,7 @@ import (
 func TestEvalIntegerExpression(t *testing.T) {
 	tests := []struct {
 		input    string
-		excepted int64
+		expected int64
 	}{
 		{"4", 4},
 		{"12", 12},
@@ -32,14 +32,14 @@ func TestEvalIntegerExpression(t *testing.T) {
 
 	for _, test := range tests {
 		ev := getEvaluated(test.input)
-		testInteger(t, ev, test.excepted)
+		testInteger(t, ev, test.expected)
 	}
 }
 
 func TestEvalBooleanExpresion(t *testing.T) {
 	tests := []struct {
 		input    string
-		excepted bool
+		expected bool
 	}{
 		{"true", true},
 		{"false", false},
@@ -69,14 +69,14 @@ func TestEvalBooleanExpresion(t *testing.T) {
 
 	for _, test := range tests {
 		ev := getEvaluated(test.input)
-		testBoolean(t, ev, test.excepted, test.input)
+		testBoolean(t, ev, test.expected, test.input)
 	}
 }
 
 func TestExclaminationOperator(t *testing.T) {
 	tests := []struct {
 		input    string
-		excepted bool
+		expected bool
 	}{
 		{"!true", false},
 		{"!false", true},
@@ -86,14 +86,14 @@ func TestExclaminationOperator(t *testing.T) {
 
 	for _, test := range tests {
 		ev := getEvaluated(test.input)
-		testBoolean(t, ev, test.excepted, test.input)
+		testBoolean(t, ev, test.expected, test.input)
 	}
 }
 
 func TestIfElseExpression(t *testing.T) {
 	tests := []struct {
 		input    string
-		excepted any
+		expected any
 	}{
 		{"if (true) { 50 }", 50},
 		{"if (false) { 50 }", nil},
@@ -109,7 +109,7 @@ func TestIfElseExpression(t *testing.T) {
 
 	for _, test := range tests {
 		ev := getEvaluated(test.input)
-		intVal, ok := test.excepted.(int)
+		intVal, ok := test.expected.(int)
 		if ok {
 			testInteger(t, ev, int64(intVal))
 		} else {
@@ -121,7 +121,7 @@ func TestIfElseExpression(t *testing.T) {
 func TestReturnStatement(t *testing.T) {
 	tests := []struct {
 		input    string
-		excepted int64
+		expected int64
 	}{
 		{"return 15", 15},
 		{"return 25; 1;", 25},
@@ -146,14 +146,14 @@ if (0 == 0) {
 
 	for _, test := range tests {
 		ev := getEvaluated(test.input)
-		testInteger(t, ev, test.excepted)
+		testInteger(t, ev, test.expected)
 	}
 }
 
 func TestErrorHandling(t *testing.T) {
 	tests := []struct {
 		input    string
-		excepted string
+		expected string
 	}{
 		{"true + false", "unknown operator: BOOLEAN + BOOLEAN"},
 		{"1; true - false; 2", "unknown operator: BOOLEAN - BOOLEAN"},
@@ -161,6 +161,8 @@ func TestErrorHandling(t *testing.T) {
 		{"-true", "unknown operator: -BOOLEAN"},
 		{"true + 3", "type mismatch: BOOLEAN + INTEGER"},
 		{"3 * false", "type mismatch: INTEGER * BOOLEAN"},
+		{`"Hello" * 3`, "type mismatch: STRING * INTEGER"},
+		{`"Hello" * "Earth"`, "unknown operator: STRING * STRING"},
 		{"if (3) { 1 }", "non boolean condition in if statement"},
 		{`
 if (1 > 0) {
@@ -180,8 +182,8 @@ if (1 > 0) {
 		if !ok {
 			t.Errorf("non error object returned: %T - %+v", ev, ev)
 		} else {
-			if err.Message != test.excepted {
-				t.Errorf("wrong error message. got: %q expected: %q", err.Message, test.excepted)
+			if err.Message != test.expected {
+				t.Errorf("wrong error message. got: %q expected: %q", err.Message, test.expected)
 			}
 		}
 	}
@@ -190,7 +192,7 @@ if (1 > 0) {
 func TestEvalAssignExpression(t *testing.T) {
 	tests := []struct {
 		input    string
-		excepted int64
+		expected int64
 	}{
 		{"x = 10; x", 10},
 		{"x = 10; x = 15; x", 15},
@@ -201,14 +203,14 @@ func TestEvalAssignExpression(t *testing.T) {
 
 	for _, test := range tests {
 		ev := getEvaluated(test.input)
-		testInteger(t, ev, test.excepted)
+		testInteger(t, ev, test.expected)
 	}
 }
 
 func TestFunctionCall(t *testing.T) {
 	tests := []struct {
 		input    string
-		excepted int64
+		expected int64
 	}{
 		{"x = fn(x){ x }; x(10);", 10},
 		{"x = fn(x, y){ return x * y }; x(10, 9);", 90},
@@ -228,7 +230,30 @@ a(4)
 
 	for _, test := range tests {
 		ev := getEvaluated(test.input)
-		testInteger(t, ev, test.excepted)
+		testInteger(t, ev, test.expected)
+	}
+}
+
+func TestEvalStringExpression(t *testing.T) {
+	tests := []struct {
+		input    string
+		expected string
+	}{
+		{`"Hello Earth"`, "Hello Earth"},
+		{`"Hello" + " " + "Earth"`, "Hello Earth"},
+	}
+
+	for _, test := range tests {
+		ev := getEvaluated(test.input)
+		res, ok := ev.(*object.String)
+		if !ok {
+			t.Errorf("obj not String got:%+v", ev)
+			return
+		}
+
+		if res.Value != test.expected {
+			t.Errorf("obj wrong value. got: %s expected: %s", res.Value, test.expected)
+		}
 	}
 }
 
