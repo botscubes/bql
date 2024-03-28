@@ -215,6 +215,15 @@ func TestFunctionCall(t *testing.T) {
 		{"x = fn(x, y, z){ return x * (y - z) }; x(10, 9, 1);", 80},
 		{"x = fn(x, y){ return x + y }; x(10, x(x(1, 1), x(3, 5)));", 20},
 		{"fn(x){ x }(5)", 5},
+		{
+			`
+c = fn(x){
+	fn(y) { x + y }
+}
+
+a = c(5);
+a(4)
+`, 9},
 	}
 
 	for _, test := range tests {
