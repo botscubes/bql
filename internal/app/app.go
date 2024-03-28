@@ -4,6 +4,7 @@ import (
 	"os"
 
 	"github.com/botscubes/bql/internal/evaluator"
+	"github.com/botscubes/bql/internal/object"
 	"github.com/botscubes/bql/internal/parser"
 	"github.com/botscubes/bql/internal/token"
 
@@ -32,7 +33,8 @@ func Start(log *zap.SugaredLogger, fileName string) {
 		return
 	}
 
-	ev := evaluator.Eval(program)
+	env := object.NewEnv()
+	ev := evaluator.Eval(program, env)
 	if ev != nil {
 		log.Debug(ev.ToString())
 	}

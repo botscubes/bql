@@ -32,19 +32,19 @@ func boolToBooleanObj(b bool) *object.Boolean {
 	return FALSE
 }
 
-func Eval(n ast.Node) object.Object {
+func Eval(n ast.Node, env *object.Env) object.Object {
 	switch node := n.(type) {
 	case *ast.Program:
-		return evalProgram(node)
+		return evalProgram(node, env)
 
 	case *ast.BlockStatement:
-		return evalBlockStatement(node)
+		return evalBlockStatement(node, env)
 
 	case *ast.ExpressionStatement:
-		return Eval(node.Expression)
+		return Eval(node.Expression, env)
 
 	case *ast.ReturnStatement:
-		val := Eval(node.Value)
+		val := Eval(node.Value, env)
 		if isError(val) {
 			return val
 		}
@@ -62,7 +62,7 @@ func Eval(n ast.Node) object.Object {
 		return FALSE
 
 	case *ast.PrefixExpression:
-		right := Eval(node.Right)
+		right := Eval(node.Right, env)
 		if isError(right) {
 			return right
 		}
@@ -70,12 +70,12 @@ func Eval(n ast.Node) object.Object {
 		return evalPrefixExpressing(node.Operator, right)
 
 	case *ast.InfixExpression:
-		left := Eval(node.Left)
+		left := Eval(node.Left, env)
 		if isError(left) {
 			return left
 		}
 
-		right := Eval(node.Right)
+		right := Eval(node.Right, env)
 		if isError(right) {
 			return right
 		}
@@ -83,17 +83,17 @@ func Eval(n ast.Node) object.Object {
 		return evalInfixExpression(node.Operator, left, right)
 
 	case *ast.IfExpression:
-		return evalIfExpression(node)
+		return evalIfExpression(node, env)
 	}
 
 	return nil
 }
 
-func evalProgram(program *ast.Program) object.Object {
+func evalProgram(program *ast.Program, env *object.Env) object.Object {
 	var result object.Object
 
 	for _, stmt := range program.Statements {
-		result = Eval(stmt)
+		result = Eval(stmt, env)
 
 		switch r := result.(type) {
 		case *object.Return:
@@ -106,11 +106,11 @@ func evalProgram(program *ast.Program) object.Object {
 	return result
 }
 
-func evalBlockStatement(block *ast.BlockStatement) object.Object {
+func evalBlockStatement(block *ast.BlockStatement, env *object.Env) object.Object {
 	var result object.Object
 
 	for _, stmt := range block.Statements {
-		result = Eval(stmt)
+		result = Eval(stmt, env)
 		if result != nil {
 			if result.Type() == object.RETURN_VALUE_OBJ || result.Type() == object.ERROR_OBJ {
 				return result
@@ -202,8 +202,8 @@ func evalIntInfixExpression(op string, left object.Object, right object.Object) 
 	}
 }
 
-func evalIfExpression(node *ast.IfExpression) object.Object {
-	condition := Eval(node.Condition)
+func evalIfExpression(node *ast.IfExpression, env *object.Env) object.Object {
+	condition := Eval(node.Condition, env)
 	if isError(condition) {
 		return condition
 	}
@@ -213,9 +213,9 @@ func evalIfExpression(node *ast.IfExpression) object.Object {
 	}
 
 	if condition == TRUE {
-		return Eval(node.Consequence)
+		return Eval(node.Consequence, env)
 	} else if node.Alternative != nil {
-		return Eval(node.Alternative)
+		return Eval(node.Alternative, env)
 	} else {
 		return NULL
 	}
