@@ -185,6 +185,24 @@ if (1 > 0) {
 	}
 }
 
+func TestEvalAssignExpression(t *testing.T) {
+	tests := []struct {
+		input    string
+		excepted int64
+	}{
+		{"x = 10; x", 10},
+		{"x = 10; x = 15; x", 15},
+		{"x = 10 * 2; x", 20},
+		{"x = 10 * 2; y = x * 3; y", 60},
+		{"x = 10; y = x * 2; z = x + y - 20; z", 10},
+	}
+
+	for _, test := range tests {
+		ev := getEvaluated(test.input)
+		testInteger(t, ev, test.excepted)
+	}
+}
+
 func getEvaluated(input string) object.Object {
 	l := lexer.New(input)
 	p := parser.New(l)

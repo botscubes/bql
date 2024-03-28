@@ -51,6 +51,14 @@ func Eval(n ast.Node, env *object.Env) object.Object {
 
 		return &object.Return{Value: val}
 
+	case *ast.AssignStatement:
+		val := Eval(node.Value, env)
+		if isError(val) {
+			return val
+		}
+
+		env.Set(node.Name.Value, val)
+
 	case *ast.IntegerLiteral:
 		return &object.Integer{Value: node.Value}
 
@@ -84,6 +92,9 @@ func Eval(n ast.Node, env *object.Env) object.Object {
 
 	case *ast.IfExpression:
 		return evalIfExpression(node, env)
+
+	case *ast.Ident:
+		return evalIdent(node, env)
 	}
 
 	return nil
@@ -219,4 +230,12 @@ func evalIfExpression(node *ast.IfExpression, env *object.Env) object.Object {
 	} else {
 		return NULL
 	}
+}
+
+func evalIdent(node *ast.Ident, env *object.Env) object.Object {
+	if val, ok := env.Get(node.Value); ok {
+		return val
+	}
+
+	return newError("identifier not found: " + node.Value)
 }
