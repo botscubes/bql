@@ -170,6 +170,8 @@ if (1 > 0) {
 
 	return 1;
 }`, "unknown operator: BOOLEAN + BOOLEAN"},
+		{"x = 10; q", "identifier not found: q"},
+		{"ijk", "identifier not found: ijk"},
 	}
 
 	for _, test := range tests {
