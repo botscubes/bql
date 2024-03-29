@@ -257,6 +257,28 @@ func TestEvalStringExpression(t *testing.T) {
 	}
 }
 
+func TestArray(t *testing.T) {
+	input := "[1, 2, -33, 5+5, 1 + 2 + 3 + 4 * 5]"
+
+	ev := getEvaluated(input)
+	res, ok := ev.(*object.Array)
+	if !ok {
+		t.Errorf("obj not Array got:%+v", ev)
+		return
+	}
+
+	if len(res.Elements) != 5 {
+		t.Errorf("wrong array length got:%d expected 5", len(res.Elements))
+		return
+	}
+
+	testInteger(t, res.Elements[0], 1)
+	testInteger(t, res.Elements[1], 2)
+	testInteger(t, res.Elements[2], -33)
+	testInteger(t, res.Elements[3], 10)
+	testInteger(t, res.Elements[4], 26)
+}
+
 func getEvaluated(input string) object.Object {
 	l := lexer.New(input)
 	p := parser.New(l)
