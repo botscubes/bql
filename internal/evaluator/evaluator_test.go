@@ -174,6 +174,8 @@ if (1 > 0) {
 }`, "unknown operator: BOOLEAN + BOOLEAN"},
 		{"x = 10; q", "identifier not found: q"},
 		{"ijk", "identifier not found: ijk"},
+		{"true[1]", "index operator not supported: BOOLEAN"},
+		{"123[123]", "index operator not supported: INTEGER"},
 	}
 
 	for _, test := range tests {
@@ -277,6 +279,31 @@ func TestArray(t *testing.T) {
 	testInteger(t, res.Elements[2], -33)
 	testInteger(t, res.Elements[3], 10)
 	testInteger(t, res.Elements[4], 26)
+}
+
+func TestArrayIndexExpression(t *testing.T) {
+	tests := []struct {
+		input    string
+		expected any
+	}{
+		{"[1, 2, 5][0]", 1},
+		{"[1, 2, 5][2]", 5},
+		{"[1, 2, 5][3]", nil},
+		{"[1, 2, 5][-1]", nil},
+		{"[1, 2, 5][1+1]", 5},
+		{"x = 1; [1, 2, 5][x]", 2},
+		{"a = [1, 2, 5]; a[0] + a[1] * a[2]", 11},
+	}
+
+	for _, test := range tests {
+		ev := getEvaluated(test.input)
+		intVal, ok := test.expected.(int)
+		if ok {
+			testInteger(t, ev, int64(intVal))
+		} else {
+			testNull(t, ev)
+		}
+	}
 }
 
 func getEvaluated(input string) object.Object {

@@ -630,6 +630,38 @@ func TestParseArray(t *testing.T) {
 	testInfixExpression(t, array.Elements[3], 5, "*", 3)
 }
 
+func TestParseIndexExpression(t *testing.T) {
+	input := "x[5 + 1]"
+
+	l := lexer.New(input)
+	p := New(l)
+	result := p.ParseProgram()
+	checkParserErrors(t, p)
+
+	if len(result.Statements) != 1 {
+		t.Fatalf("program has incorrect number of statements. got:%d",
+			len(result.Statements))
+	}
+
+	stmt, ok := result.Statements[0].(*ast.ExpressionStatement)
+	if !ok {
+		t.Fatalf("result.Statements[0] is not ast.ExpressionStatement. got:%T",
+			result.Statements[0])
+	}
+
+	exp, ok := stmt.Expression.(*ast.IndexExpression)
+	if !ok {
+		t.Fatalf("stmt.Expression is not ast.IndexExpression. got:%T",
+			result.Statements[0])
+	}
+
+	if !testIdent(t, exp.Left, "x") {
+		return
+	}
+
+	testInfixExpression(t, exp.Index, 5, "+", 1)
+}
+
 func testInfixExpression(
 	t *testing.T,
 	exp ast.Expression,

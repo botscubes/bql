@@ -95,6 +95,7 @@ func New(l *lexer.Lexer) *Parser {
 	p.infixParsers[token.LOR] = p.parseInfixExpression
 	p.infixParsers[token.LAND] = p.parseInfixExpression
 	p.infixParsers[token.LPAR] = p.parseCallExpression
+	p.infixParsers[token.LBRACKET] = p.parseIndexExpression
 
 	// read curToken and peekToken
 	p.nextToken()
@@ -458,4 +459,17 @@ func (p *Parser) parseArray() ast.Expression {
 	array := &ast.ArrayLiteral{Token: p.curToken}
 	array.Elements = p.parseExpressionList(token.RBRACKET)
 	return array
+}
+
+func (p *Parser) parseIndexExpression(left ast.Expression) ast.Expression {
+	exp := &ast.IndexExpression{Token: p.curToken, Left: left}
+
+	p.nextToken()
+	exp.Index = p.parseExpression(LOWEST)
+
+	if !p.expectPeek(token.RBRACKET) {
+		return nil
+	}
+
+	return exp
 }
