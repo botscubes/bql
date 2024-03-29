@@ -306,6 +306,71 @@ func TestArrayIndexExpression(t *testing.T) {
 	}
 }
 
+func TestHashMap(t *testing.T) {
+	input := `x = "v";
+	{
+		"a": 1,
+		"bb": 10*10,
+		x: 4,
+		"qq"+"ww": 123,
+		true: 1,
+		false: 0
+	}`
+
+	ev := getEvaluated(input)
+	res, ok := ev.(*object.HashMap)
+	if !ok {
+		t.Fatalf("non HashMap returned: %T - %+v", ev, ev)
+	}
+
+	expected := map[object.HashKey]int64{
+		(&object.String{Value: "a"}).HashKey():    1,
+		(&object.String{Value: "bb"}).HashKey():   100,
+		(&object.String{Value: "v"}).HashKey():    4,
+		(&object.String{Value: "qqww"}).HashKey(): 123,
+		TRUE.HashKey():  1,
+		FALSE.HashKey(): 0,
+	}
+
+	if len(res.Pairs) != len(expected) {
+		t.Fatalf("wrong len pairs. got: %d expected:%d", len(res.Pairs), len(expected))
+	}
+
+	for ek, ev := range expected {
+		p, ok := res.Pairs[ek]
+		if !ok {
+			t.Errorf("not found pair for Key")
+		}
+
+		testInteger(t, p.Value, ev)
+	}
+}
+
+func TestHashMapIndexExpression(t *testing.T) {
+	tests := []struct {
+		input    string
+		expected any
+	}{
+		{`{"x": 1}["x"]`, 1},
+		{`{"x": 1}["y"]`, nil},
+		{`{}["y"]`, nil},
+		{`{5: 2}[5]`, 2},
+		{`{true: 5}[true]`, 5},
+		{`{false: -1}[false]`, -1},
+		{`y = "key"; {"key": 0}[y]`, 0},
+	}
+
+	for _, test := range tests {
+		ev := getEvaluated(test.input)
+		intVal, ok := test.expected.(int)
+		if ok {
+			testInteger(t, ev, int64(intVal))
+		} else {
+			testNull(t, ev)
+		}
+	}
+}
+
 func getEvaluated(input string) object.Object {
 	l := lexer.New(input)
 	p := parser.New(l)

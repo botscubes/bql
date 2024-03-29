@@ -662,6 +662,171 @@ func TestParseIndexExpression(t *testing.T) {
 	testInfixExpression(t, exp.Index, 5, "+", 1)
 }
 
+func TestParseEmptyHashMap(t *testing.T) {
+	input := "{}"
+
+	l := lexer.New(input)
+	p := New(l)
+	result := p.ParseProgram()
+	checkParserErrors(t, p)
+
+	if len(result.Statements) != 1 {
+		t.Fatalf("program has incorrect number of statements. got:%d",
+			len(result.Statements))
+	}
+
+	stmt, ok := result.Statements[0].(*ast.ExpressionStatement)
+	if !ok {
+		t.Fatalf("result.Statements[0] is not ast.ExpressionStatement. got:%T",
+			result.Statements[0])
+	}
+
+	hash, ok := stmt.Expression.(*ast.HashMapLiteral)
+	if !ok {
+		t.Fatalf("stmt.Expression is not ast.HashMapLiteral. got:%T",
+			result.Statements[0])
+	}
+
+	if len(hash.Pairs) != 0 {
+		t.Errorf("wrong len of hash.Pairs. got:%d expected: 0", len(hash.Pairs))
+	}
+}
+
+func TestParseHashMapStringKeys(t *testing.T) {
+	input := `{"abc": 123, "q": 321}`
+
+	l := lexer.New(input)
+	p := New(l)
+	result := p.ParseProgram()
+	checkParserErrors(t, p)
+
+	if len(result.Statements) != 1 {
+		t.Fatalf("program has incorrect number of statements. got:%d",
+			len(result.Statements))
+	}
+
+	stmt, ok := result.Statements[0].(*ast.ExpressionStatement)
+	if !ok {
+		t.Fatalf("result.Statements[0] is not ast.ExpressionStatement. got:%T",
+			result.Statements[0])
+	}
+
+	hash, ok := stmt.Expression.(*ast.HashMapLiteral)
+	if !ok {
+		t.Fatalf("stmt.Expression is not ast.HashMapLiteral. got:%T",
+			result.Statements[0])
+	}
+
+	expected := map[string]int64{
+		"abc": 123,
+		"q":   321,
+	}
+
+	if len(hash.Pairs) != len(expected) {
+		t.Errorf("wrong len of hash.Pairs. got:%d expected: %d", len(hash.Pairs), len(expected))
+	}
+
+	for key, value := range hash.Pairs {
+		lit, ok := key.(*ast.StringLiteral)
+		if !ok {
+			t.Errorf("key is not ast.StringLiteral. got:%T", key)
+		}
+
+		expectedVal := expected[lit.ToString()]
+		testIntLiteral(t, value, expectedVal)
+	}
+}
+
+func TestParseHashMapBooleanKeys(t *testing.T) {
+	input := `{true: 123, false: 321}`
+
+	l := lexer.New(input)
+	p := New(l)
+	result := p.ParseProgram()
+	checkParserErrors(t, p)
+
+	if len(result.Statements) != 1 {
+		t.Fatalf("program has incorrect number of statements. got:%d",
+			len(result.Statements))
+	}
+
+	stmt, ok := result.Statements[0].(*ast.ExpressionStatement)
+	if !ok {
+		t.Fatalf("result.Statements[0] is not ast.ExpressionStatement. got:%T",
+			result.Statements[0])
+	}
+
+	hash, ok := stmt.Expression.(*ast.HashMapLiteral)
+	if !ok {
+		t.Fatalf("stmt.Expression is not ast.HashMapLiteral. got:%T",
+			result.Statements[0])
+	}
+
+	expected := map[string]int64{
+		"true":  123,
+		"false": 321,
+	}
+
+	if len(hash.Pairs) != len(expected) {
+		t.Errorf("wrong len of hash.Pairs. got:%d expected: %d", len(hash.Pairs), len(expected))
+	}
+
+	for key, value := range hash.Pairs {
+		lit, ok := key.(*ast.Boolean)
+		if !ok {
+			t.Errorf("key is not ast.Boolean. got:%T", key)
+		}
+
+		expectedVal := expected[lit.ToString()]
+		testIntLiteral(t, value, expectedVal)
+	}
+}
+
+func TestParseHashMapIntegerKeys(t *testing.T) {
+	input := `{1: 123, 2: 321}`
+
+	l := lexer.New(input)
+	p := New(l)
+	result := p.ParseProgram()
+	checkParserErrors(t, p)
+
+	if len(result.Statements) != 1 {
+		t.Fatalf("program has incorrect number of statements. got:%d",
+			len(result.Statements))
+	}
+
+	stmt, ok := result.Statements[0].(*ast.ExpressionStatement)
+	if !ok {
+		t.Fatalf("result.Statements[0] is not ast.ExpressionStatement. got:%T",
+			result.Statements[0])
+	}
+
+	hash, ok := stmt.Expression.(*ast.HashMapLiteral)
+	if !ok {
+		t.Fatalf("stmt.Expression is not ast.HashMapLiteral. got:%T",
+			result.Statements[0])
+	}
+
+	expected := map[string]int64{
+		"1": 123,
+		"2": 321,
+	}
+
+	if len(hash.Pairs) != len(expected) {
+		t.Errorf("wrong len of hash.Pairs. got:%d expected: %d", len(hash.Pairs), len(expected))
+	}
+
+	for key, value := range hash.Pairs {
+		lit, ok := key.(*ast.IntegerLiteral)
+		if !ok {
+			t.Errorf("key is not ast.IntegerLiteral. got:%T", key)
+		}
+
+		expectedVal := expected[lit.ToString()]
+		testIntLiteral(t, value, expectedVal)
+	}
+}
+
 func testInfixExpression(
 	t *testing.T,
 	exp ast.Expression,

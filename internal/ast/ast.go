@@ -291,7 +291,7 @@ type StringLiteral struct {
 
 func (sl *StringLiteral) expressionNode()      {}
 func (sl *StringLiteral) TokenLiteral() string { return sl.Token.Literal }
-func (sl *StringLiteral) ToString() string     { return `"` + sl.Token.Literal + `"` }
+func (sl *StringLiteral) ToString() string     { return sl.Token.Literal }
 
 type ArrayLiteral struct {
 	Token    token.Token // '['
@@ -331,6 +331,28 @@ func (ie *IndexExpression) ToString() string {
 	out.WriteString("[")
 	out.WriteString(ie.Index.ToString())
 	out.WriteString("])")
+
+	return out.String()
+}
+
+type HashMapLiteral struct {
+	Token token.Token // {
+	Pairs map[Expression]Expression
+}
+
+func (hl *HashMapLiteral) expressionNode()      {}
+func (hl *HashMapLiteral) TokenLiteral() string { return hl.Token.Literal }
+func (hl *HashMapLiteral) ToString() string {
+	var out bytes.Buffer
+
+	pairs := []string{}
+	for key, value := range hl.Pairs {
+		pairs = append(pairs, key.ToString()+":"+value.ToString())
+	}
+
+	out.WriteString("{")
+	out.WriteString(strings.Join(pairs, ","))
+	out.WriteString("}")
 
 	return out.String()
 }

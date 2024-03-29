@@ -78,6 +78,7 @@ func New(l *lexer.Lexer) *Parser {
 	p.prefixParsers[token.STRING] = p.parseString
 	p.prefixParsers[token.LBRACKET] = p.parseArray
 	p.prefixParsers[token.FUNC] = p.parseFunction
+	p.prefixParsers[token.LBRACE] = p.parseHashMapLiteral
 
 	// infix parse functions
 	p.infixParsers = make(map[token.TokenType]infixParseFn)
@@ -141,6 +142,15 @@ func (p *Parser) expectPeek(t token.TokenType) bool {
 		return true
 	} else {
 		p.newError(fmt.Sprintf("expected next token: %s, got %s", t, p.peekToken.Type))
+		return false
+	}
+}
+
+func (p *Parser) skipPeek(t token.TokenType) bool {
+	if p.peekTokenIs(t) {
+		p.nextToken()
+		return true
+	} else {
 		return false
 	}
 }
@@ -472,4 +482,32 @@ func (p *Parser) parseIndexExpression(left ast.Expression) ast.Expression {
 	}
 
 	return exp
+}
+
+func (p *Parser) parseHashMapLiteral() ast.Expression {
+	hash := &ast.HashMapLiteral{Token: p.curToken}
+	hash.Pairs = make(map[ast.Expression]ast.Expression)
+
+	for !p.peekTokenIs(token.RBRACE) {
+		p.nextToken()
+		key := p.parseExpression(LOWEST)
+
+		if !p.expectPeek(token.COLON) {
+			return nil
+		}
+
+		p.nextToken()
+		value := p.parseExpression(LOWEST)
+		hash.Pairs[key] = value
+
+		if !p.peekTokenIs(token.RBRACE) && !p.skipPeek(token.SEMICOLON) && !p.expectPeek(token.COMMA) {
+			return nil
+		}
+	}
+
+	if !p.expectPeek(token.RBRACE) {
+		return nil
+	}
+
+	return hash
 }

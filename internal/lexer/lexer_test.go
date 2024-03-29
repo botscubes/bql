@@ -48,6 +48,9 @@ b || true;
 qwe123;
 _ewq;
 _99;
+{
+	"abc": 123
+};
 `
 
 	tests := []ExpectedToken{
@@ -190,6 +193,13 @@ _99;
 		{token.IDENT, "_ewq"},
 		{token.SEMICOLON, ";"},
 		{token.IDENT, "_99"},
+		{token.SEMICOLON, ";"},
+		{token.LBRACE, "{"},
+		{token.STRING, "abc"},
+		{token.COLON, ":"},
+		{token.INT, "123"},
+		{token.SEMICOLON, "\n"},
+		{token.RBRACE, "}"},
 		{token.SEMICOLON, ";"},
 		{token.EOF, ""},
 	}
