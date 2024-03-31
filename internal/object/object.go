@@ -9,7 +9,9 @@ import (
 	"github.com/botscubes/bql/internal/ast"
 )
 
-type ObjectType = string
+type ObjectType string
+
+type BuiltinFunction func(args ...Object) Object
 
 type Object interface {
 	Type() ObjectType
@@ -29,6 +31,7 @@ const (
 	HASH_MAP_OBJ = "HASH_MAP"
 
 	FUNCTION_OBJ = "FUNCTION"
+	BUILTIN_OBJ  = "BUILTIN"
 )
 
 type HashKey struct {
@@ -161,3 +164,10 @@ func (h *HashMap) ToString() string {
 
 	return out.String()
 }
+
+type Builtin struct {
+	Fn BuiltinFunction
+}
+
+func (b *Builtin) Type() ObjectType { return BUILTIN_OBJ }
+func (b *Builtin) ToString() string { return "builtin function" }

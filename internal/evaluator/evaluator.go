@@ -292,6 +292,10 @@ func evalIdent(node *ast.Ident, env *object.Env) object.Object {
 		return val
 	}
 
+	if builtin, ok := builtins[node.Value]; ok {
+		return builtin
+	}
+
 	return newError("identifier not found: " + node.Value)
 }
 
@@ -308,15 +312,17 @@ func evalExpressions(exprs []ast.Expression, env *object.Env) []object.Object {
 	return result
 }
 
-func callFunction(fn object.Object, args []object.Object) object.Object {
-	function, ok := fn.(*object.Function)
-	if !ok {
+func callFunction(function object.Object, args []object.Object) object.Object {
+	switch fn := function.(type) {
+	case *object.Function:
+		extEnv := extendFuncEnv(fn, args)
+		ev := Eval(fn.Body, extEnv)
+		return unwrapReturn(ev)
+	case *object.Builtin:
+		return fn.Fn(args...)
+	default:
 		return newError("call not a function: %s", fn.Type())
 	}
-
-	extEnv := extendFuncEnv(function, args)
-	ev := Eval(function.Body, extEnv)
-	return unwrapReturn(ev)
 }
 
 func extendFuncEnv(fn *object.Function, args []object.Object) *object.Env {

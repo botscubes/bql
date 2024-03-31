@@ -371,6 +371,38 @@ func TestHashMapIndexExpression(t *testing.T) {
 	}
 }
 
+func TestBuiltinFunctions(t *testing.T) {
+	tests := []struct {
+		input    string
+		expected any
+	}{
+		{`len("abc")`, 3},
+		{`len("abc" + "efg")`, 6},
+		{`len("")`, 0},
+		{`len(1)`, "type of argument not supported: INTEGER"},
+		{`len("a", "b")`, "wrong number of arguments: 2 want: 1"},
+		{`x = "abc"; len(x)`, 3},
+	}
+
+	for _, test := range tests {
+		ev := getEvaluated(test.input)
+		switch ex := test.expected.(type) {
+		case int:
+			testInteger(t, ev, int64(ex))
+		case string:
+			res, ok := ev.(*object.Error)
+			if !ok {
+				t.Errorf("object is not Error: %T - %+v", ev, ev)
+				continue
+			}
+
+			if res.Message != ex {
+				t.Errorf("wrong error message: %s expected: %s", res.Message, ex)
+			}
+		}
+	}
+}
+
 func getEvaluated(input string) object.Object {
 	l := lexer.New(input)
 	p := parser.New(l)
