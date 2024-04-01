@@ -382,6 +382,20 @@ func TestBuiltinFunctions(t *testing.T) {
 		{`len(1)`, "type of argument not supported: INTEGER"},
 		{`len("a", "b")`, "wrong number of arguments: 2 want: 1"},
 		{`x = "abc"; len(x)`, 3},
+		{`len([])`, 0},
+		{`len([1, 2])`, 2},
+		{`x = [1, 2, 3]; len(x)`, 3},
+		{`push([], 4)`, []int{4}},
+		{`push([1, 2, 3], 4)`, []int{1, 2, 3, 4}},
+		{`push("a", 4)`, "first argument must be ARRAY, got: STRING"},
+		{`first([])`, nil},
+		{`first([1])`, 1},
+		{`first([3, 2, 1])`, 3},
+		{`first("a")`, "argument must be ARRAY, got: STRING"},
+		{`last([])`, nil},
+		{`last([1])`, 1},
+		{`last([3, 2, 1])`, 1},
+		{`last("a")`, "argument must be ARRAY, got: STRING"},
 	}
 
 	for _, test := range tests {
@@ -389,6 +403,8 @@ func TestBuiltinFunctions(t *testing.T) {
 		switch ex := test.expected.(type) {
 		case int:
 			testInteger(t, ev, int64(ex))
+		case nil:
+			testNull(t, ev)
 		case string:
 			res, ok := ev.(*object.Error)
 			if !ok {
@@ -398,6 +414,21 @@ func TestBuiltinFunctions(t *testing.T) {
 
 			if res.Message != ex {
 				t.Errorf("wrong error message: %s expected: %s", res.Message, ex)
+			}
+		case []int:
+			res, ok := ev.(*object.Array)
+			if !ok {
+				t.Errorf("object is not Array: %T - %+v", ev, ev)
+				continue
+			}
+
+			if len(res.Elements) != len(ex) {
+				t.Errorf("wrong number of elements: %d expected: %d", len(res.Elements), len(ex))
+				continue
+			}
+
+			for i, el := range ex {
+				testInteger(t, res.Elements[i], int64(el))
 			}
 		}
 	}
