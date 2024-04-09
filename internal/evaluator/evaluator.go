@@ -78,7 +78,7 @@ func Eval(n ast.Node, env *object.Env) object.Object {
 			return right
 		}
 
-		return evalPrefixExpressing(node.Operator, right)
+		return evalPrefixExpression(node.Operator, right)
 
 	case *ast.InfixExpression:
 		left := Eval(node.Left, env)
@@ -103,7 +103,7 @@ func Eval(n ast.Node, env *object.Env) object.Object {
 		return &object.Function{Parameters: node.Parameters, Body: node.Body, Env: env}
 
 	case *ast.CallExpression:
-		function := Eval(node.FnName, env)
+		function := Eval(node.Function, env)
 		if isError(function) {
 			return function
 		}
@@ -174,12 +174,12 @@ func evalBlockStatement(block *ast.BlockStatement, env *object.Env) object.Objec
 	return result
 }
 
-func evalPrefixExpressing(op string, right object.Object) object.Object {
+func evalPrefixExpression(op string, right object.Object) object.Object {
 	switch op {
 	case "!":
-		return evalExclOperatorExpression(right)
+		return evalExclOpExpr(right)
 	case "-":
-		return evalMinusPrefixOperatorExpression(right)
+		return evalMinusPrefixOpExpr(right)
 	default:
 		return newError("unknown operator: %s", op)
 	}
@@ -187,10 +187,12 @@ func evalPrefixExpressing(op string, right object.Object) object.Object {
 
 func evalInfixExpression(op string, left object.Object, right object.Object) object.Object {
 	switch {
+	case left.Type() != right.Type():
+		return newError("type mismatch: %s %s %s", left.Type(), op, right.Type())
 	case left.Type() == object.INTEGER_OBJ && right.Type() == object.INTEGER_OBJ:
-		return evalIntInfixExpression(op, left, right)
+		return evalIntInfixExpr(op, left, right)
 	case left.Type() == object.STRING_OBJ && right.Type() == object.STRING_OBJ:
-		return evalStringInfixExpression(op, left, right)
+		return evalStringInfixExpr(op, left, right)
 	case op == "==":
 		return boolToBooleanObj(left == right)
 	case op == "!=":
@@ -199,14 +201,12 @@ func evalInfixExpression(op string, left object.Object, right object.Object) obj
 		return boolToBooleanObj(left.(*object.Boolean).Value || right.(*object.Boolean).Value)
 	case op == "&&":
 		return boolToBooleanObj(left.(*object.Boolean).Value && right.(*object.Boolean).Value)
-	case left.Type() != right.Type():
-		return newError("type mismatch: %s %s %s", left.Type(), op, right.Type())
 	default:
 		return newError("unknown operator: %s %s %s", left.Type(), op, right.Type())
 	}
 }
 
-func evalExclOperatorExpression(right object.Object) object.Object {
+func evalExclOpExpr(right object.Object) object.Object {
 	switch right {
 	case TRUE:
 		return FALSE
@@ -217,7 +217,7 @@ func evalExclOperatorExpression(right object.Object) object.Object {
 	}
 }
 
-func evalMinusPrefixOperatorExpression(right object.Object) object.Object {
+func evalMinusPrefixOpExpr(right object.Object) object.Object {
 	if right.Type() != object.INTEGER_OBJ {
 		return newError("unknown operator: -%s", right.Type())
 	}
@@ -226,7 +226,7 @@ func evalMinusPrefixOperatorExpression(right object.Object) object.Object {
 	return &object.Integer{Value: -value}
 }
 
-func evalIntInfixExpression(op string, left object.Object, right object.Object) object.Object {
+func evalIntInfixExpr(op string, left object.Object, right object.Object) object.Object {
 	lVal := left.(*object.Integer).Value
 	rVal := right.(*object.Integer).Value
 	switch op {
@@ -257,7 +257,7 @@ func evalIntInfixExpression(op string, left object.Object, right object.Object) 
 	}
 }
 
-func evalStringInfixExpression(op string, left object.Object, right object.Object) object.Object {
+func evalStringInfixExpr(op string, left object.Object, right object.Object) object.Object {
 	lVal := left.(*object.String).Value
 	rVal := right.(*object.String).Value
 	switch op {

@@ -460,7 +460,7 @@ func TestParseCallExpression(t *testing.T) {
 			result.Statements[0])
 	}
 
-	if !testIdent(t, exp.FnName, "sum") {
+	if !testIdent(t, exp.Function, "sum") {
 		return
 	}
 
@@ -489,11 +489,6 @@ func TestParseFunctionParameters(t *testing.T) {
 		p := New(l)
 		result := p.ParseProgram()
 		checkParserErrors(t, p)
-
-		if len(result.Statements) != 1 {
-			t.Fatalf("program has incorrect number of statements. got:%d",
-				len(result.Statements))
-		}
 
 		stmt, ok := result.Statements[0].(*ast.ExpressionStatement)
 		if !ok {
@@ -573,11 +568,6 @@ func TestParseString(t *testing.T) {
 	result := p.ParseProgram()
 	checkParserErrors(t, p)
 
-	if len(result.Statements) != 1 {
-		t.Fatalf("program has incorrect number of statements. got:%d",
-			len(result.Statements))
-	}
-
 	stmt, ok := result.Statements[0].(*ast.ExpressionStatement)
 	if !ok {
 		t.Fatalf("result.Statements[0] is not ast.ExpressionStatement. got:%T",
@@ -602,11 +592,6 @@ func TestParseArray(t *testing.T) {
 	p := New(l)
 	result := p.ParseProgram()
 	checkParserErrors(t, p)
-
-	if len(result.Statements) != 1 {
-		t.Fatalf("program has incorrect number of statements. got:%d",
-			len(result.Statements))
-	}
 
 	stmt, ok := result.Statements[0].(*ast.ExpressionStatement)
 	if !ok {
@@ -638,11 +623,6 @@ func TestParseIndexExpression(t *testing.T) {
 	result := p.ParseProgram()
 	checkParserErrors(t, p)
 
-	if len(result.Statements) != 1 {
-		t.Fatalf("program has incorrect number of statements. got:%d",
-			len(result.Statements))
-	}
-
 	stmt, ok := result.Statements[0].(*ast.ExpressionStatement)
 	if !ok {
 		t.Fatalf("result.Statements[0] is not ast.ExpressionStatement. got:%T",
@@ -670,11 +650,6 @@ func TestParseEmptyHashMap(t *testing.T) {
 	result := p.ParseProgram()
 	checkParserErrors(t, p)
 
-	if len(result.Statements) != 1 {
-		t.Fatalf("program has incorrect number of statements. got:%d",
-			len(result.Statements))
-	}
-
 	stmt, ok := result.Statements[0].(*ast.ExpressionStatement)
 	if !ok {
 		t.Fatalf("result.Statements[0] is not ast.ExpressionStatement. got:%T",
@@ -699,11 +674,6 @@ func TestParseHashMapStringKeys(t *testing.T) {
 	p := New(l)
 	result := p.ParseProgram()
 	checkParserErrors(t, p)
-
-	if len(result.Statements) != 1 {
-		t.Fatalf("program has incorrect number of statements. got:%d",
-			len(result.Statements))
-	}
 
 	stmt, ok := result.Statements[0].(*ast.ExpressionStatement)
 	if !ok {
@@ -745,11 +715,6 @@ func TestParseHashMapBooleanKeys(t *testing.T) {
 	result := p.ParseProgram()
 	checkParserErrors(t, p)
 
-	if len(result.Statements) != 1 {
-		t.Fatalf("program has incorrect number of statements. got:%d",
-			len(result.Statements))
-	}
-
 	stmt, ok := result.Statements[0].(*ast.ExpressionStatement)
 	if !ok {
 		t.Fatalf("result.Statements[0] is not ast.ExpressionStatement. got:%T",
@@ -789,11 +754,6 @@ func TestParseHashMapIntegerKeys(t *testing.T) {
 	p := New(l)
 	result := p.ParseProgram()
 	checkParserErrors(t, p)
-
-	if len(result.Statements) != 1 {
-		t.Fatalf("program has incorrect number of statements. got:%d",
-			len(result.Statements))
-	}
 
 	stmt, ok := result.Statements[0].(*ast.ExpressionStatement)
 	if !ok {

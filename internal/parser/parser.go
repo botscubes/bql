@@ -432,7 +432,7 @@ func (p *Parser) parseIfExpression() ast.Expression {
 }
 
 func (p *Parser) parseCallExpression(fn ast.Expression) ast.Expression {
-	exp := &ast.CallExpression{Token: p.curToken, FnName: fn}
+	exp := &ast.CallExpression{Token: p.curToken, Function: fn}
 	exp.Arguments = p.parseExpressionList(token.RPAR)
 	return exp
 }

@@ -255,14 +255,16 @@ func (fl *FunctionLiteral) ToString() string {
 	out.WriteString("(")
 	out.WriteString(strings.Join(params, ", "))
 	out.WriteString(") ")
+	out.WriteString("{ ")
 	out.WriteString(fl.Body.ToString())
+	out.WriteString("} ")
 
 	return out.String()
 }
 
 type CallExpression struct {
 	Token     token.Token // '('
-	FnName    Expression  // Ident
+	Function  Expression  // Ident
 	Arguments []Expression
 }
 
@@ -276,7 +278,7 @@ func (ce *CallExpression) ToString() string {
 		args = append(args, a.ToString())
 	}
 
-	out.WriteString(ce.FnName.ToString())
+	out.WriteString(ce.Function.ToString())
 	out.WriteString("(")
 	out.WriteString(strings.Join(args, ", "))
 	out.WriteString(")")

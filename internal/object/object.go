@@ -102,7 +102,9 @@ func (f *Function) ToString() string {
 	out.WriteString("(")
 	out.WriteString(strings.Join(params, ", "))
 	out.WriteString(") ")
+	out.WriteString("{ ")
 	out.WriteString(f.Body.ToString())
+	out.WriteString("} ")
 
 	return out.String()
 }
