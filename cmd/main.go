@@ -9,6 +9,8 @@ import (
 	"github.com/botscubes/bql/pkg/logger"
 )
 
+// можно запустить как самостоятельную программу. (go run ./cmd/main.go input.txt)
+// для использовать в качестве модуля см. ../api/api.go
 func main() {
 	log, err := logger.NewLogger(logger.Config{
 		Type: "dev",
