@@ -1,3 +1,26 @@
 y = 2
 x + y + len(s) + m["b"] + a[0]
-a
+
+
+
+
+ar = [1, 2, 3]
+ma = {
+    "q": 1,
+    "s": 2,
+    "t": {
+        true: false,
+    }
+}
+
+bo = true
+
+r = fn(x) {
+    if (x * 10 > 300) {
+        return x * 10 - 15
+    }
+
+    return x * 10
+}
+
+r(3)

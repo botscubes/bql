@@ -114,3 +114,43 @@ func convertArray(data []any) (Object, error) {
 
 	return &Array{Elements: elements}, nil
 }
+
+func ExtractRawValueFromObject(obj Object) (any, bool) {
+	switch obj.Type() {
+	case INTEGER_OBJ:
+		return obj.(*Integer).Value, true
+	case BOOLEAN_OBJ:
+		return obj.(*Boolean).Value, true
+	case STRING_OBJ:
+		return obj.(*String).Value, true
+	case ARRAY_OBJ:
+		a := make([]any, len(obj.(*Array).Elements))
+		for id, e := range obj.(*Array).Elements {
+			v, ok := ExtractRawValueFromObject(e)
+			if !ok {
+				return v, false
+			}
+
+			a[id] = v
+		}
+		return a, true
+	case HASH_MAP_OBJ:
+		m := make(map[string]any)
+		for _, el := range obj.(*HashMap).Pairs {
+			v, ok := ExtractRawValueFromObject(el.Value)
+			if !ok {
+				return v, false
+			}
+
+			m[el.Key.ToString()] = v
+		}
+
+		return m, true
+	case NULL_OBJ:
+		return nil, true
+	case ERROR_OBJ:
+		return obj.ToString(), false
+	default:
+		return fmt.Sprintf("unsupported result type: %s", obj.Type()), false
+	}
+}

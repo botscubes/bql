@@ -3,11 +3,11 @@ package app
 import (
 	"os"
 
+	"github.com/botscubes/bql/api"
 	"github.com/botscubes/bql/internal/parser"
 	"github.com/botscubes/bql/internal/token"
 
 	"github.com/botscubes/bot-components/context"
-	"github.com/botscubes/bql/api"
 	"github.com/botscubes/bql/internal/lexer"
 	"go.uber.org/zap"
 )
@@ -45,9 +45,12 @@ func Start(log *zap.SugaredLogger, fileName string) {
 		log.Errorw("prepareCtx", "error", err)
 	}
 
-	err = api.EvalWithCtx(input, ctx, &passVars)
+	result, err := api.EvalWithCtx(string(input), ctx, &passVars)
 	if err != nil {
 		log.Errorw("EvalWithCtx", "error", err)
+	} else {
+		log.Debugf("RESULT TYPE: %T", result)
+		log.Debugf("RESULT VALUE: %+v", result)
 	}
 
 	log.Info("Done")
