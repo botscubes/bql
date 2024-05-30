@@ -1,28 +1,31 @@
-x = (2+3)*5;
-if(x >= 10) {
-		t = 1 + 2 * (3 - 125) % 2 / (9 + 1);
+x = 1
+y = -1000
+c = 10 + (x - y) / 2
+m = 5 % 2
+
+if (m == 1) {
+    c = c + 10000
 } else {
-		t = -1;
+    c = -c
 }
 
-r = add(1, 2 * 8, t, 2 + 3);
+a = ["hello", "world"]
+helloWorld = a[0] + last(a)
 
-s = "abc -1 88 \n tu"
-
-put(s, "oop")
-
-x = [s, -5 * 6, 33]
-empty = []
-x = 2 + 3; y = 4
-if (x == y) { 1 } else { 0 }
-
-fn(x){ x }
-
-q = fn(x,y,z){
-	r = x+y
-	return r * z
+f = fn(p, q) {
+    return p == q
 }
 
-if (a > b && true || false) {
-	return true && 1;
+hashMap = {
+    "v1": 1,
+    "v2": helloWorld,
+    "v3": true
 }
+
+if (hashMap["v3"] == f(1, 1)) {
+    q = 44
+} else {
+    q = -1
+}
+
+q
