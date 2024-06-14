@@ -263,6 +263,18 @@ func evalStringInfixExpr(op string, left object.Object, right object.Object) obj
 	switch op {
 	case "+":
 		return &object.String{Value: lVal + rVal}
+	case "==":
+		return boolToBooleanObj(lVal == rVal)
+	case "!=":
+		return boolToBooleanObj(lVal != rVal)
+	case ">":
+		return boolToBooleanObj(lVal > rVal)
+	case "<":
+		return boolToBooleanObj(lVal < rVal)
+	case ">=":
+		return boolToBooleanObj(lVal >= rVal)
+	case "<=":
+		return boolToBooleanObj(lVal <= rVal)
 	default:
 		return newError("unknown operator: %s %s %s", left.Type(), op, right.Type())
 	}
