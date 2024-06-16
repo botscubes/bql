@@ -1,6 +1,8 @@
 package evaluator
 
 import (
+	"strconv"
+
 	"github.com/botscubes/bql/internal/object"
 )
 
@@ -69,6 +71,21 @@ var builtins = map[string]*object.Builtin{
 			}
 
 			return NULL
+		},
+	},
+	"intToString": {
+		Fn: func(args ...object.Object) object.Object {
+			if len(args) != 1 {
+				return newError("wrong number of arguments: %d want: 1", len(args))
+			}
+
+			if args[0].Type() != object.INTEGER_OBJ {
+				return newError("argument must be INTEGER, got: %s", args[0].Type())
+			}
+
+			number := args[0].(*object.Integer).Value
+
+			return &object.String{Value: strconv.FormatInt(number, 10)}
 		},
 	},
 }

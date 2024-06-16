@@ -384,29 +384,33 @@ func TestHashMapIndexExpression(t *testing.T) {
 
 func TestBuiltinFunctions(t *testing.T) {
 	tests := []struct {
-		input    string
-		expected any
+		input         string
+		expected      any
+		expectIsError bool
 	}{
-		{`len("abc")`, 3},
-		{`len("abc" + "efg")`, 6},
-		{`len("")`, 0},
-		{`len(1)`, "type of argument not supported: INTEGER"},
-		{`len("a", "b")`, "wrong number of arguments: 2 want: 1"},
-		{`x = "abc"; len(x)`, 3},
-		{`len([])`, 0},
-		{`len([1, 2])`, 2},
-		{`x = [1, 2, 3]; len(x)`, 3},
-		{`push([], 4)`, []int{4}},
-		{`push([1, 2, 3], 4)`, []int{1, 2, 3, 4}},
-		{`push("a", 4)`, "first argument must be ARRAY, got: STRING"},
-		{`first([])`, nil},
-		{`first([1])`, 1},
-		{`first([3, 2, 1])`, 3},
-		{`first("a")`, "argument must be ARRAY, got: STRING"},
-		{`last([])`, nil},
-		{`last([1])`, 1},
-		{`last([3, 2, 1])`, 1},
-		{`last("a")`, "argument must be ARRAY, got: STRING"},
+		{`len("abc")`, 3, false},
+		{`len("abc" + "efg")`, 6, false},
+		{`len("")`, 0, false},
+		{`len(1)`, "type of argument not supported: INTEGER", true},
+		{`len("a", "b")`, "wrong number of arguments: 2 want: 1", true},
+		{`x = "abc"; len(x)`, 3, false},
+		{`len([])`, 0, false},
+		{`len([1, 2])`, 2, false},
+		{`x = [1, 2, 3]; len(x)`, 3, false},
+		{`push([], 4)`, []int{4}, false},
+		{`push([1, 2, 3], 4)`, []int{1, 2, 3, 4}, false},
+		{`push("a", 4)`, "first argument must be ARRAY, got: STRING", true},
+		{`first([])`, nil, false},
+		{`first([1])`, 1, false},
+		{`first([3, 2, 1])`, 3, false},
+		{`first("a")`, "argument must be ARRAY, got: STRING", true},
+		{`last([])`, nil, false},
+		{`last([1])`, 1, false},
+		{`last([3, 2, 1])`, 1, false},
+		{`last("a")`, "argument must be ARRAY, got: STRING", true},
+		{`intToString("a")`, "argument must be INTEGER, got: STRING", true},
+		{`intToString(123)`, "123", false},
+		{`intToString(1, 2)`, "wrong number of arguments: 2 want: 1", true},
 	}
 
 	for _, test := range tests {
@@ -417,14 +421,26 @@ func TestBuiltinFunctions(t *testing.T) {
 		case nil:
 			testNull(t, ev)
 		case string:
-			res, ok := ev.(*object.Error)
-			if !ok {
-				t.Errorf("object is not Error: %T - %+v", ev, ev)
-				continue
-			}
+			if test.expectIsError {
+				res, ok := ev.(*object.Error)
+				if !ok {
+					t.Errorf("object is not Error: %T - %+v", ev, ev)
+					continue
+				}
 
-			if res.Message != ex {
-				t.Errorf("wrong error message: %s expected: %s", res.Message, ex)
+				if res.Message != ex {
+					t.Errorf("wrong error message: %s expected: %s", res.Message, ex)
+				}
+			} else {
+				res, ok := ev.(*object.String)
+				if !ok {
+					t.Errorf("object is not String: %T - %+v", ev, ev)
+					continue
+				}
+
+				if res.Value != ex {
+					t.Errorf("wrong string value: %s expected: %s", res.Value, ex)
+				}
 			}
 		case []int:
 			res, ok := ev.(*object.Array)
