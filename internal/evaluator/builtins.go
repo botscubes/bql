@@ -88,4 +88,24 @@ var builtins = map[string]*object.Builtin{
 			return &object.String{Value: strconv.FormatInt(number, 10)}
 		},
 	},
+	"stringToInt": {
+		Fn: func(args ...object.Object) object.Object {
+			if len(args) != 1 {
+				return newError("wrong number of arguments: %d want: 1", len(args))
+			}
+
+			if args[0].Type() != object.STRING_OBJ {
+				return newError("argument must be STRING, got: %s", args[0].Type())
+			}
+
+			str := args[0].(*object.String).Value
+
+			number, err := strconv.ParseInt(str, 10, 64)
+			if err != nil {
+				return newError("string to int convert error: %s", err.Error())
+			}
+
+			return &object.Integer{Value: number}
+		},
+	},
 }

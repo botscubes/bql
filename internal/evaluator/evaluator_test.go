@@ -411,6 +411,9 @@ func TestBuiltinFunctions(t *testing.T) {
 		{`intToString("a")`, "argument must be INTEGER, got: STRING", true},
 		{`intToString(123)`, "123", false},
 		{`intToString(1, 2)`, "wrong number of arguments: 2 want: 1", true},
+		{`stringToInt(1, 2)`, "wrong number of arguments: 2 want: 1", true},
+		{`stringToInt(1)`, "argument must be STRING, got: INTEGER", true},
+		{`stringToInt("123")`, 123, false},
 	}
 
 	for _, test := range tests {
